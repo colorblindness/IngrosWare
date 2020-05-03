@@ -1,0 +1,16 @@
+[
+{
+  "modid": "ingrosware",
+  "name": "IngrosWare",
+  "description": "a epic modpack.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["x3", "Xenforu", "carroteater"],
+  "credits": "bommer",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

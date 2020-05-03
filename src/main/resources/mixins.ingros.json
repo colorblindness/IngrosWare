@@ -1,0 +1,30 @@
+{
+  "package": "best.reich.ingros.mixin.impl",
+  "refmap": "mixin.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_8",
+  "verbose": false,
+  "mixins": [
+    "MixinBlock",
+    "MixinCPacketCustomPayload",
+    "MixinCPacketPlayer",
+    "MixinCPacketTabComplete",
+    "MixinEntity",
+    "MixinEntityPlayer",
+    "MixinEntityPlayerSP",
+    "MixinEntityRenderer",
+    "MixinGuiBossOverlay",
+    "MixinGuiScreen",
+    "MixinLayerArmorBase",
+    "MixinMinecraft",
+    "MixinModelPlayer",
+    "MixinNetHandlerPlayClient",
+    "MixinNetworkManager",
+    "MixinPlayerControllerMP",
+    "MixinRender",
+    "MixinRenderManager",
+    "MixinSPacketPosLook",
+    "MixinTextComponentString",
+    "MixinWorldClient"
+  ]
+}
