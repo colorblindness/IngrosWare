@@ -61,8 +61,6 @@ public class Visuals extends ToggleableModule {
     public boolean health = true;
     @Setting("Nametags")
     public boolean nametags = true;
-    @Setting("Box")
-    public boolean box = true;
     @Setting("Armor")
     public boolean armor = true;
     @Setting("Ping")
@@ -138,7 +136,7 @@ public class Visuals extends ToggleableModule {
                         final float w = (transformed.w * 2) - x;
                         final float y = transformed.y * 2;
                         final float h = (transformed.z * 2) - y;
-                        if (box) {
+                        if (boundingbox && (boxmode.equalsIgnoreCase("2D") || boxmode.equalsIgnoreCase("BOTH"))) {
                             RenderUtil.drawBorderedRect(x, y, w, h, 1, 0x00000000, 0xff000000);
                             RenderUtil.drawBorderedRect(x - 1, y - 1, w + 2, h + 2, 1, 0x00000000, clr.getRGB());
                             RenderUtil.drawBorderedRect(x - 2, y - 2, w + 4, h + 4, 1, 0x00000000, 0xff000000);

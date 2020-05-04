@@ -17,6 +17,7 @@ public class Frame {
     private final float height;
     private boolean extended,dragging;
     private final ArrayList<Component> components = new ArrayList<>();
+    private int scrollY;
     public Frame(String label, float posX, float posY, float width, float height) {
         this.label = label;
         this.posX = posX;
@@ -38,25 +39,24 @@ public class Frame {
         if (isDragging()) {
             setPosX(mouseX + getLastPosX());
             setPosY(mouseY + getLastPosY());
-            moved(getPosX(),getPosY());
+            getComponents().forEach(component -> component.moved(getPosX(),getPosY()+ getScrollY()));
         }
         if (getPosX() < 0) {
             setPosX(0);
-            moved(getPosX(),getPosY());
+            getComponents().forEach(component -> component.moved(getPosX(),getPosY()+ getScrollY()));
         }
         if (getPosX() + getWidth() > scaledResolution.getScaledWidth()) {
             setPosX(scaledResolution.getScaledWidth() - getWidth());
-            moved(getPosX(),getPosY());
+            getComponents().forEach(component -> component.moved(getPosX(),getPosY()+ getScrollY()));
         }
         if (getPosY() < 0) {
             setPosY(0);
-            moved(getPosX(),getPosY());
+            getComponents().forEach(component -> component.moved(getPosX(),getPosY()+ getScrollY()));
         }
         if (getPosY() + getHeight() > scaledResolution.getScaledHeight()) {
             setPosY(scaledResolution.getScaledHeight() - getHeight());
-            moved(getPosX(),getPosY());
+            getComponents().forEach(component -> component.moved(getPosX(),getPosY()+ getScrollY()));
         }
-        if (isExtended()) getComponents().forEach(component -> component.drawScreen(mouseX, mouseY, partialTicks));
     }
 
     public void keyTyped(char character, int keyCode)  {
@@ -80,7 +80,6 @@ public class Frame {
             default:
                 break;
         }
-        if (isExtended()) getComponents().forEach(component -> component.mouseClicked(mouseX, mouseY, mouseButton));
     }
 
     public void mouseReleased(int mouseX, int mouseY, int mouseButton) {
@@ -150,5 +149,13 @@ public class Frame {
 
     public void setDragging(boolean dragging) {
         this.dragging = dragging;
+    }
+
+    public int getScrollY() {
+        return scrollY;
+    }
+
+    public void setScrollY(int scrollY) {
+        this.scrollY = scrollY;
     }
 }
