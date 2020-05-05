@@ -3,6 +3,7 @@ package best.reich.ingros.module.toggles;
 import best.reich.ingros.IngrosWare;
 import best.reich.ingros.events.render.Render2DEvent;
 import best.reich.ingros.events.render.Render3DEvent;
+import best.reich.ingros.events.render.RenderEntityEvent;
 import best.reich.ingros.events.render.RenderNameEvent;
 import best.reich.ingros.mixin.accessors.IEntityRenderer;
 import best.reich.ingros.mixin.accessors.IRenderManager;
@@ -17,6 +18,7 @@ import me.xenforu.kelo.setting.annotation.Mode;
 import me.xenforu.kelo.setting.annotation.Setting;
 import me.xenforu.kelo.util.math.MathUtil;
 import net.b0at.api.event.Subscribe;
+import net.b0at.api.event.types.EventType;
 import net.minecraft.block.BlockChest;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.model.ModelPlayer;
@@ -65,6 +67,10 @@ public class Visuals extends ToggleableModule {
     public boolean armor = true;
     @Setting("Ping")
     public boolean ping = true;
+    @Setting("Glow")
+    public boolean glow = true;
+    @Setting("Wallhack")
+    public boolean wallHack = true;
     @Setting("Skeleton")
     public boolean skeleton = true;
     @Setting("Invisibles")
@@ -151,9 +157,9 @@ public class Visuals extends ToggleableModule {
                         }
                         if (nametags) {
                             final NetworkPlayerInfo networkPlayerInfo = mc.getConnection().getPlayerInfo(ent.getUniqueID());
-                            final String p =  Objects.isNull(networkPlayerInfo) ? " 0ms" :  " " +  networkPlayerInfo.getResponseTime() + "ms";
-                            final ChatFormatting healthColor =  (Math.min((int)ent.getHealth() + (int)ent.getAbsorptionAmount(),20) >= ent.getMaxHealth() / 1.45f ? ChatFormatting.GREEN : Math.min((int)ent.getHealth() + (int)ent.getAbsorptionAmount(),20) >= ent.getMaxHealth() / 2f ? ChatFormatting.YELLOW : Math.min((int)ent.getHealth() + (int)ent.getAbsorptionAmount(),20) >= ent.getMaxHealth() / 3f ? ChatFormatting.RED : ChatFormatting.DARK_RED);
-                            final String str =  (ping ? ChatFormatting.BLUE + p:"") + healthColor + " " + ((int) ent.getHealth() + (int) ent.getAbsorptionAmount());
+                            final String p = Objects.isNull(networkPlayerInfo) ? " 0ms" : " " + networkPlayerInfo.getResponseTime() + "ms";
+                            final ChatFormatting healthColor = (Math.min((int) ent.getHealth() + (int) ent.getAbsorptionAmount(), 20) >= ent.getMaxHealth() / 1.45f ? ChatFormatting.GREEN : Math.min((int) ent.getHealth() + (int) ent.getAbsorptionAmount(), 20) >= ent.getMaxHealth() / 2f ? ChatFormatting.YELLOW : Math.min((int) ent.getHealth() + (int) ent.getAbsorptionAmount(), 20) >= ent.getMaxHealth() / 3f ? ChatFormatting.RED : ChatFormatting.DARK_RED);
+                            final String str = (ping ? ChatFormatting.BLUE + p : "") + healthColor + " " + ((int) ent.getHealth() + (int) ent.getAbsorptionAmount());
                             RenderUtil.drawRect((x + (w / 2) - (mc.fontRenderer.getStringWidth((IngrosWare.INSTANCE.friendManager.isFriend(ent.getName()) ? (IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() != null ? IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() : ent.getName()) : ent.getName()) + str) >> 1)) - 2, y - 5 - mc.fontRenderer.FONT_HEIGHT, mc.fontRenderer.getStringWidth((IngrosWare.INSTANCE.friendManager.isFriend(ent.getName()) ? (IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() != null ? IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() : ent.getName()) : ent.getName()) + str) + 3, mc.fontRenderer.FONT_HEIGHT + 3, 0x60000000);
                             mc.fontRenderer.drawStringWithShadow((IngrosWare.INSTANCE.friendManager.isFriend(ent.getName()) ? (IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() != null ? IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() : ent.getName()) : ent.getName()) + str, (x + (w / 2) - (mc.fontRenderer.getStringWidth((IngrosWare.INSTANCE.friendManager.isFriend(ent.getName()) ? (IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() != null ? IngrosWare.INSTANCE.friendManager.getFriend(ent.getName()).getAlias() : ent.getName()) : ent.getName()) + str) >> 1)), y - 3 - mc.fontRenderer.FONT_HEIGHT, clr.getRGB());
                         }
@@ -164,6 +170,18 @@ public class Visuals extends ToggleableModule {
                     }
                 }
             });
+        }
+    }
+    @Subscribe
+    public void onPre(RenderEntityEvent event) {
+        if (wallHack && event.getEntity() instanceof EntityLivingBase && isValid((EntityLivingBase) event.getEntity())) {
+            if (event.getEventType() == EventType.PRE) {
+                GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
+                GL11.glPolygonOffset(1.0F, -2000000F);
+            } else {
+                GL11.glPolygonOffset(1.0F, 2000000F);
+                GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+            }
         }
     }
 
@@ -259,6 +277,7 @@ public class Visuals extends ToggleableModule {
                 if (entity instanceof EntityLivingBase) {
                     final EntityLivingBase ent = (EntityLivingBase) entity;
                     if (isValid(ent)) {
+                        ent.setGlowing(glow);
                         final Color clr = getEntityColor(entity);
                         final double posX = RenderUtil.interpolate(entity.posX, entity.lastTickPosX, partialTicks) - ((IRenderManager) mc.getRenderManager()).getRenderPosX();
                         final double posY = RenderUtil.interpolate(entity.posY, entity.lastTickPosY, partialTicks) - ((IRenderManager) mc.getRenderManager()).getRenderPosY();
@@ -553,5 +572,13 @@ public class Visuals extends ToggleableModule {
 
     private Color getEntityColor(Entity entity) {
         return new Color(IngrosWare.INSTANCE.friendManager.isFriend(entity.getName()) ? 0xff2020ff : (entity.isSneaking() ? 0xffffff00 : 0xffffffff));
+    }
+
+    @Override
+    public void onDisable() {
+        super.onDisable();
+        if (mc.world != null && glow) {
+            mc.world.loadedEntityList.forEach(e -> e.setGlowing(false));
+        }
     }
 }

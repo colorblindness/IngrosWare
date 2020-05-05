@@ -15,8 +15,12 @@ public class ColorSetting extends AbstractSetting<Color> {
         super(label, object, field);
     }
 
+    public void setValue(int value) {
+        setValue(new Color(value));
+    }
+
     @Override
     public void setValue(String value) {
-
+        setValue(new Color(Integer.parseInt(value)));
     }
 }

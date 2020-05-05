@@ -17,5 +17,6 @@ public @interface ModuleManifest {
     String label();
     ModuleCategory category();
     int color() default 0;
+    int bind() default 0;
     boolean hidden() default false;
 }

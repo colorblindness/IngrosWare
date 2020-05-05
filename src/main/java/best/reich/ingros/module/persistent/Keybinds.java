@@ -11,7 +11,6 @@ import org.lwjgl.input.Keyboard;
 
 @ModuleManifest(label = "Keybinds", category = ModuleCategory.OTHER)
 public class Keybinds extends PersistentModule {
-    private ClickGUI clickGUI = null;
 
     @Subscribe
     public void onKey(KeyPressedEvent event) {
@@ -24,12 +23,5 @@ public class Keybinds extends PersistentModule {
         IngrosWare.INSTANCE.moduleManager.getToggles().forEach(module -> {
             if(module.getBind() == event.getKey()) module.toggle();
         });
-        if (event.getKey() == Keyboard.KEY_DELETE) {
-            if (clickGUI == null) {
-                clickGUI = new ClickGUI();
-                clickGUI.init();
-            }
-            mc.displayGuiScreen(clickGUI);
-        }
     }
 }

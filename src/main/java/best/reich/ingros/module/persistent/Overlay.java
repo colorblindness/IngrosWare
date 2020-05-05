@@ -79,6 +79,9 @@ public class Overlay extends PersistentModule {
     @Setting("NotResponding")
     public boolean notresponding = true;
 
+    @Setting("ClientColor")
+    public Color clientColor = new Color(234, 38, 38);
+
     private final TimerUtil potionTimer = new TimerUtil();
     private final TimerUtil serverTimer = new TimerUtil();
     private int initialRenderPos = 2;
@@ -271,7 +274,7 @@ public class Overlay extends PersistentModule {
             case "NORMAL":
                 return toggleableModule.getColor();
             case "CLIENT":
-                return 0xEA2626;
+                return clientColor.getRGB();
             case "RAINBOW":
                 return RenderUtil.getRainbow(3000, 10 * offset, 0.75f);
         }
@@ -282,7 +285,7 @@ public class Overlay extends PersistentModule {
         switch (colormode.toUpperCase()) {
             case "NORMAL":
             case "CLIENT":
-                return 0xEA2626;
+                return clientColor.getRGB();
             case "RAINBOW":
                 return RenderUtil.getRainbow(3000, 10, 0.75f);
         }

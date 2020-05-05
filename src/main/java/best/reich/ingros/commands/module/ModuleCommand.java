@@ -7,8 +7,12 @@ import me.xenforu.kelo.command.Command;
 import me.xenforu.kelo.command.annotation.CommandManifest;
 import me.xenforu.kelo.module.IModule;
 import me.xenforu.kelo.setting.impl.BooleanSetting;
+import me.xenforu.kelo.setting.impl.ColorSetting;
 import me.xenforu.kelo.setting.impl.ModeStringSetting;
 import me.xenforu.kelo.setting.impl.StringSetting;
+import me.xenforu.kelo.util.math.MathUtil;
+
+import java.awt.*;
 
 @CommandManifest(label = "")
 public class ModuleCommand extends Command {
@@ -45,10 +49,30 @@ public class ModuleCommand extends Command {
                         } else {
                             Logger.printMessage("Not enough arguments to change property.");
                         }
+                    } else if (property instanceof ColorSetting) {
+                        final ColorSetting colorSetting = (ColorSetting) property;
+                        if (args.length >= 5) {
+                            try {
+                                final int r = MathUtil.clamp(Integer.parseInt(args[2]),0,255);
+                                final int g = MathUtil.clamp(Integer.parseInt(args[3]),0,255);
+                                final int b = MathUtil.clamp(Integer.parseInt(args[4]),0,255);
+                                if (args.length > 5) {
+                                    final int a = MathUtil.clamp(Integer.parseInt(args[5]),0,255);
+                                    colorSetting.setValue(new Color(r,g,b,a));
+                                } else {
+                                    colorSetting.setValue(new Color(r,g,b));
+                                }
+                                Logger.printMessage(property.getLabel() + " has been set to " + colorSetting.getValue().getRGB() + " for " + module.getLabel() + ".");
+                            } catch (Exception e) {
+                                Logger.printMessage("Not enough arguments to change property.");
+                            }
+                        } else {
+                            Logger.printMessage("Not enough arguments to change property.");
+                        }
                     } else if (property instanceof StringSetting) {
                         if (args.length >= 3) {
                             final StringBuilder stringBuilder = new StringBuilder();
-                            for (int i = 2; i < args.length;i++) {
+                            for (int i = 2; i < args.length; i++) {
                                 stringBuilder.append(args[i]);
                                 if (i != args.length - 1) stringBuilder.append(" ");
                             }

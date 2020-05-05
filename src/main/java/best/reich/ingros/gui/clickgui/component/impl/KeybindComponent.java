@@ -1,6 +1,8 @@
 package best.reich.ingros.gui.clickgui.component.impl;
 
+import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
+import best.reich.ingros.module.toggles.ClickGui;
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.logging.Logger;
 import best.reich.ingros.util.render.RenderUtil;
@@ -28,8 +30,9 @@ public class KeybindComponent extends Component {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
+        final ClickGui clickGui = (ClickGui) IngrosWare.INSTANCE.moduleManager.getModule("ClickGui");
         RenderUtil.drawRect(getFinishedX(), getFinishedY(), getWidth(), getHeight(), 0x92000000);
-        RenderUtil.drawBorderedRect(getFinishedX() + 5, getFinishedY() + 1f, getWidth() - 10, getHeight() - 2,0.5f,0x40000000, 0xFFB3002E);
+        RenderUtil.drawBorderedRect(getFinishedX() + 5, getFinishedY() + 1f, getWidth() - 10, getHeight() - 2,0.5f,0x40000000, clickGui.color.getRGB());
         Fonts.arialFont.drawStringWithShadow(isBinding() ? "Press a key...":"Bind: " + Keyboard.getKeyName(getToggleableModule().getBind()), getFinishedX() + 6, getFinishedY() + 0.5f+ getHeight() / 2 - Fonts.arialFont.getStringHeight(getLabel()) / 2, 0xFFFFFFFF);
     }
 

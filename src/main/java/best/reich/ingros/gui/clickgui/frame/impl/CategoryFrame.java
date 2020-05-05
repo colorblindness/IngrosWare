@@ -4,6 +4,7 @@ import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
 import best.reich.ingros.gui.clickgui.component.impl.ModuleComponent;
 import best.reich.ingros.gui.clickgui.frame.Frame;
+import best.reich.ingros.module.toggles.ClickGui;
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.render.RenderUtil;
 import me.xenforu.kelo.module.IModule;
@@ -39,7 +40,8 @@ public class CategoryFrame extends Frame {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX,mouseY,partialTicks);
-        RenderUtil.drawRect(getPosX(), getPosY(), getWidth(), getHeight(), 0xFFB3002E);
+        final ClickGui clickGui = (ClickGui) IngrosWare.INSTANCE.moduleManager.getModule("ClickGui");
+        RenderUtil.drawRect(getPosX(), getPosY(), getWidth(), getHeight(), clickGui.color.getRGB());
         RenderUtil.drawRect(getPosX(), getPosY() + getHeight() - 0.5f, getWidth(), 0.5f, 0xFF323232);
         Fonts.arialFont.drawStringWithShadow(getLabel(), getPosX() + 3, getPosY() + getHeight() / 2 - Fonts.arialFont.getStringHeight(getLabel()) / 2, 0xFFFFFFFF);
         if (isExtended()) {
