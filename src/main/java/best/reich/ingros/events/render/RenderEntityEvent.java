@@ -8,13 +8,13 @@ import net.minecraft.entity.Entity;
 
 public class RenderEntityEvent extends Event {
 
-    private final Render<?> renderer;
+    private final Render renderer;
     private final Entity entity;
     private final double x, y, z;
     private final float entityYaw;
     private final float partialTicks;
     private final EventType eventType;
-    public RenderEntityEvent(Render<?> renderer, Entity entity, double x, double y, double z, float entityYaw, float partialTicks,EventType eventType) {
+    public RenderEntityEvent(Render renderer, Entity entity, double x, double y, double z, float entityYaw, float partialTicks,EventType eventType) {
         this.renderer = renderer;
         this.entity = entity;
         this.x = x;
@@ -25,7 +25,7 @@ public class RenderEntityEvent extends Event {
         this.eventType = eventType;
     }
 
-    public Render<?> getRenderer() {
+    public Render getRenderer() {
         return renderer;
     }
 

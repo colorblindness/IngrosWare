@@ -79,6 +79,9 @@ public class Overlay extends PersistentModule {
     @Setting("NotResponding")
     public boolean notresponding = true;
 
+    @Setting("Notifications")
+    public boolean notifications = true;
+
     @Setting("ClientColor")
     public Color clientColor = new Color(234, 38, 38);
 
@@ -174,6 +177,7 @@ public class Overlay extends PersistentModule {
         if (greetings) RenderUtil.drawText(getGreetings() + mc.player.getName() + ".", event.getScaledResolution().getScaledWidth() / 2 - RenderUtil.getTextWidth(getGreetings() + mc.player.getName() + ".",font) / 2, 2, getHudColor(),font);
         if (notresponding && serverTimer.reach(1000)) RenderUtil.drawText("Server has not responded for \247r" + new DecimalFormat("0.0").format((double) serverTimer.time() / 1000) + "s", event.getScaledResolution().getScaledWidth() / 2 - RenderUtil.getTextWidth("Server has not responded for " + new DecimalFormat("0.0").format(serverTimer.time() / 1000) + "s",font) / 2, 2 + (greetings ? RenderUtil.getTextHeight(font) + 2 : 0), getHudColor(),font);
         if (potions) drawPotions(event.getScaledResolution());
+        if (notifications) IngrosWare.INSTANCE.notificationManager.renderNotifications();
     }
 
     private void drawArmor(ScaledResolution scaledResolution) {
@@ -281,7 +285,7 @@ public class Overlay extends PersistentModule {
         return -1;
     }
 
-    private int getHudColor() {
+    public int getHudColor() {
         switch (colormode.toUpperCase()) {
             case "NORMAL":
             case "CLIENT":

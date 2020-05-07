@@ -13,6 +13,6 @@ public class HelpCommand extends Command {
         StringBuilder stringBuilder = new StringBuilder();
         IngrosWare.INSTANCE.commandManager.getValues().forEach(command ->
                 stringBuilder.append(command.getLabel()).append(" - ").append(command.getDescription()).append("\n"));
-        Logger.printMessage(stringBuilder.toString());
+        Logger.printMessage(stringBuilder.toString(),false);
     }
 }

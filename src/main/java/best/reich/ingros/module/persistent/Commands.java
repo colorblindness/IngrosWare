@@ -45,7 +45,7 @@ public class Commands extends PersistentModule {
                 }
             }
             if (!event.isCancelled()) {
-                Logger.printMessage("Command \"" + message + "\" was not found!");
+                Logger.printMessage("Command \"" + message + "\" was not found!",true);
                 event.setCancelled(true);
             }
             event.setCancelled(true);

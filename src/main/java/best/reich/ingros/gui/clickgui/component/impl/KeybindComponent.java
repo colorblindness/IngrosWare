@@ -41,7 +41,7 @@ public class KeybindComponent extends Component {
         super.keyTyped(character, keyCode);
         if (isBinding()) {
             getToggleableModule().setBind(keyCode == Keyboard.KEY_ESCAPE || keyCode == Keyboard.KEY_SPACE || keyCode == Keyboard.KEY_DELETE ? Keyboard.KEY_NONE : keyCode);
-            Logger.printMessage("Bound " + getLabel() + " to " + Keyboard.getKeyName(getToggleableModule().getBind()));
+            Logger.printMessage("Bound " + getLabel() + " to " + Keyboard.getKeyName(getToggleableModule().getBind()),true);
             setBinding(false);
         }
     }

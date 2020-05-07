@@ -8,6 +8,7 @@ import best.reich.ingros.events.render.RenderNameEvent;
 import best.reich.ingros.mixin.accessors.IEntityRenderer;
 import best.reich.ingros.mixin.accessors.IRenderManager;
 import best.reich.ingros.util.render.GLUProjection;
+import best.reich.ingros.util.render.OutlineUtil;
 import best.reich.ingros.util.render.RenderUtil;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.realmsclient.gui.ChatFormatting;
@@ -52,6 +53,8 @@ import java.util.*;
 
 @ModuleManifest(label = "Visuals", category = ModuleCategory.RENDER, color = 0xFF0030FF, hidden = true)
 public class Visuals extends ToggleableModule {
+    @Setting("PlayerColor")
+    public Color playerColor = new Color(255, 0, 0);
     @Setting("Tracers")
     public boolean tracers = true;
     @Setting("BoundingBox")
@@ -67,8 +70,8 @@ public class Visuals extends ToggleableModule {
     public boolean armor = true;
     @Setting("Ping")
     public boolean ping = true;
-    @Setting("Glow")
-    public boolean glow = true;
+    @Setting("Outline")
+    public boolean outline = true;
     @Setting("Wallhack")
     public boolean wallHack = true;
     @Setting("Skeleton")
@@ -115,6 +118,7 @@ public class Visuals extends ToggleableModule {
 
     @Subscribe
     public void onRenderWorldToScreen(Render2DEvent event) {
+        if (mc.world == null || mc.player == null) return;
         if (armor || nametags || health || (boundingbox && (boxmode.equalsIgnoreCase("2D") || boxmode.equalsIgnoreCase("BOTH")))) {
             mc.world.loadedEntityList.forEach(entity -> {
                 if (entity instanceof EntityLivingBase) {
@@ -172,21 +176,42 @@ public class Visuals extends ToggleableModule {
             });
         }
     }
+
     @Subscribe
     public void onPre(RenderEntityEvent event) {
-        if (wallHack && event.getEntity() instanceof EntityLivingBase && isValid((EntityLivingBase) event.getEntity())) {
+        if (mc.world == null || mc.player == null) return;
+        if (event.getEntity() instanceof EntityLivingBase && isValid((EntityLivingBase) event.getEntity())) {
             if (event.getEventType() == EventType.PRE) {
-                GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
-                GL11.glPolygonOffset(1.0F, -2000000F);
+                if (wallHack) {
+                    GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
+                    GL11.glPolygonOffset(1.0F, -2000000F);
+                }
+                if (outline) {
+                    final Color clr = getEntityColor(event.getEntity());
+                    GlStateManager.depthMask(true);
+                    event.getRenderer().doRender(event.getEntity(), event.getX(), event.getY(), event.getZ(), event.getEntityYaw(), event.getPartialTicks());
+                    OutlineUtil.renderOne();
+                    event.getRenderer().doRender(event.getEntity(), event.getX(), event.getY(), event.getZ(), event.getEntityYaw(), event.getPartialTicks());
+                    OutlineUtil.renderTwo();
+                    event.getRenderer().doRender(event.getEntity(), event.getX(), event.getY(), event.getZ(), event.getEntityYaw(), event.getPartialTicks());
+                    OutlineUtil.renderThree();
+                    OutlineUtil.renderFour(clr);
+                    event.getRenderer().doRender(event.getEntity(), event.getX(), event.getY(), event.getZ(), event.getEntityYaw(), event.getPartialTicks());
+                    OutlineUtil.renderFive();
+                    event.setCancelled(true);
+                }
             } else {
-                GL11.glPolygonOffset(1.0F, 2000000F);
-                GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+                if (wallHack) {
+                    GL11.glPolygonOffset(1.0F, 2000000F);
+                    GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+                }
             }
         }
     }
 
     @Subscribe
     public void onRenderHand(Render3DEvent event) {
+        if (mc.world == null || mc.player == null) return;
         if (skeleton) {
             startEnd(true);
             GL11.glEnable(GL11.GL_COLOR_MATERIAL);
@@ -277,7 +302,6 @@ public class Visuals extends ToggleableModule {
                 if (entity instanceof EntityLivingBase) {
                     final EntityLivingBase ent = (EntityLivingBase) entity;
                     if (isValid(ent)) {
-                        ent.setGlowing(glow);
                         final Color clr = getEntityColor(entity);
                         final double posX = RenderUtil.interpolate(entity.posX, entity.lastTickPosX, partialTicks) - ((IRenderManager) mc.getRenderManager()).getRenderPosX();
                         final double posY = RenderUtil.interpolate(entity.posY, entity.lastTickPosY, partialTicks) - ((IRenderManager) mc.getRenderManager()).getRenderPosY();
@@ -389,7 +413,7 @@ public class Visuals extends ToggleableModule {
             GL11.glPushMatrix();
             GL11.glEnable(GL11.GL_LINE_SMOOTH);
             GL11.glLineWidth(1);
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             Vec3d vec = getVec3(event, e);
             double x = vec.x - ((IRenderManager) mc.getRenderManager()).getRenderPosX();
             double y = vec.y - ((IRenderManager) mc.getRenderManager()).getRenderPosY();
@@ -400,7 +424,7 @@ public class Visuals extends ToggleableModule {
             GL11.glTranslated(0.0D, 0.0D, e.isSneaking() ? -0.235D : 0.0D);
             float yOff = e.isSneaking() ? 0.6F : 0.75F;
             GL11.glPushMatrix();
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             GL11.glTranslated(-0.125D, yOff, 0.0D);
             if (entPos[3][0] != 0.0F) {
                 GL11.glRotatef(entPos[3][0] * 57.295776F, 1.0F, 0.0F, 0.0F);
@@ -420,7 +444,7 @@ public class Visuals extends ToggleableModule {
             GL11.glEnd();
             GL11.glPopMatrix();
             GL11.glPushMatrix();
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             GL11.glTranslated(0.125D, yOff, 0.0D);
             if (entPos[4][0] != 0.0F) {
                 GL11.glRotatef(entPos[4][0] * 57.295776F, 1.0F, 0.0F, 0.0F);
@@ -441,10 +465,10 @@ public class Visuals extends ToggleableModule {
             GL11.glPopMatrix();
             GL11.glTranslated(0.0D, 0.0D, e.isSneaking() ? 0.25D : 0.0D);
             GL11.glPushMatrix();
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             GL11.glTranslated(0.0D, e.isSneaking() ? -0.05D : 0.0D, e.isSneaking() ? -0.01725D : 0.0D);
             GL11.glPushMatrix();
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             GL11.glTranslated(-0.375D, yOff + 0.55D, 0.0D);
             if (entPos[1][0] != 0.0F) {
                 GL11.glRotatef(entPos[1][0] * 57.295776F, 1.0F, 0.0F, 0.0F);
@@ -484,12 +508,11 @@ public class Visuals extends ToggleableModule {
             GL11.glPopMatrix();
             GL11.glRotatef(xOff - e.rotationYawHead, 0.0F, 1.0F, 0.0F);
             GL11.glPushMatrix();
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             GL11.glTranslated(0.0D, yOff + 0.55D, 0.0D);
             if (entPos[0][0] != 0.0F) {
                 GL11.glRotatef(entPos[0][0] * 57.295776F, 1.0F, 0.0F, 0.0F);
             }
-
             GL11.glBegin(3);
             GL11.glVertex3d(0.0D, 0.0D, 0.0D);
             GL11.glVertex3d(0.0D, 0.3D, 0.0D);
@@ -506,7 +529,7 @@ public class Visuals extends ToggleableModule {
             GL11.glEnd();
             GL11.glPopMatrix();
             GL11.glPushMatrix();
-            GlStateManager.color(clr.getRed() / 255, clr.getGreen() / 255, clr.getBlue() / 255, 1);
+            GlStateManager.color(clr.getRed() / 255.f, clr.getGreen() / 255.f, clr.getBlue() / 255.f, 1);
             GL11.glTranslated(0.0D, yOff, 0.0D);
             GL11.glBegin(3);
             GL11.glVertex3d(0.0D, 0.0D, 0.0D);
@@ -571,14 +594,6 @@ public class Visuals extends ToggleableModule {
     }
 
     private Color getEntityColor(Entity entity) {
-        return new Color(IngrosWare.INSTANCE.friendManager.isFriend(entity.getName()) ? 0xff2020ff : (entity.isSneaking() ? 0xffffff00 : 0xffffffff));
-    }
-
-    @Override
-    public void onDisable() {
-        super.onDisable();
-        if (mc.world != null && glow) {
-            mc.world.loadedEntityList.forEach(e -> e.setGlowing(false));
-        }
+        return new Color(IngrosWare.INSTANCE.friendManager.isFriend(entity.getName()) ? 0xff2020ff : (entity.isSneaking() ? 0xffffff00 : playerColor.getRGB()));
     }
 }

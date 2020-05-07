@@ -36,7 +36,7 @@ public class AltCommand extends Command {
                 IngrosWare.INSTANCE.switchToMojang();
                 run(args[2], args[3]);
             }
-        } else Logger.printMessage("Not enough arguments!");
+        } else Logger.printMessage("Not enough arguments!",true);
     }
 
     private Session createSession(String username, String password) {
@@ -55,12 +55,12 @@ public class AltCommand extends Command {
     }
 
     public void run(String username, String password) {
-        Logger.printMessage(ChatFormatting.AQUA + "Logging in...");
+        Logger.printMessage(ChatFormatting.AQUA + "Logging in...",true);
         Session auth = createSession(username, password);
         if (auth == null) {
-            Logger.printMessage(ChatFormatting.RED + "Login failed!");
+            Logger.printMessage(ChatFormatting.RED + "Login failed!",true);
         } else {
-            Logger.printMessage(ChatFormatting.GREEN + "Logged in. (" + auth.getUsername() + ")");
+            Logger.printMessage(ChatFormatting.GREEN + "Logged in. (" + auth.getUsername() + ")",true);
             ((IMinecraft) mc).setSession(auth);
         }
     }

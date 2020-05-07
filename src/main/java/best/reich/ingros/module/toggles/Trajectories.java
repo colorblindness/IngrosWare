@@ -1,29 +1,25 @@
 package best.reich.ingros.module.toggles;
 
 import best.reich.ingros.events.render.Render3DEvent;
-import best.reich.ingros.util.render.RenderUtil;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.module.type.ToggleableModule;
 import me.xenforu.kelo.setting.annotation.Setting;
-import me.xenforu.kelo.util.math.MathUtil;
 import net.b0at.api.event.Subscribe;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.init.Items;
+import net.minecraft.item.*;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL32;
+import org.lwjgl.util.glu.Cylinder;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -38,365 +34,158 @@ public class Trajectories extends ToggleableModule {
     @Subscribe
     public void onRender3D(Render3DEvent event) {
         if (mc.world == null || mc.player == null) return;
-        ThrowableType throwingType = this.getTypeFromCurrentItem(mc.player);
-
-        if (throwingType == ThrowableType.NONE) {
+        double renderPosX = mc.player.lastTickPosX + (mc.player.posX - mc.player.lastTickPosX) * event.getPartialTicks();
+        double renderPosY = mc.player.lastTickPosY + (mc.player.posY - mc.player.lastTickPosY) * event.getPartialTicks();
+        double renderPosZ = mc.player.lastTickPosZ + (mc.player.posZ - mc.player.lastTickPosZ) * event.getPartialTicks();
+        mc.player.getHeldItem(EnumHand.MAIN_HAND);
+        if (mc.gameSettings.thirdPersonView != 0) {
             return;
         }
-
-        FlightPath flightPath = new FlightPath(mc.player, throwingType);
-
-        while (!flightPath.isCollided()) {
-            flightPath.onUpdate();
-
-            flightPoint.offer(new Vec3d(flightPath.position.x - mc.getRenderManager().viewerPosX,
-                    flightPath.position.y - mc.getRenderManager().viewerPosY,
-                    flightPath.position.z - mc.getRenderManager().viewerPosZ));
+        if (!(mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemBow || mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemFishingRod || mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemEnderPearl || mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemEgg || mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemSnowball || mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemExpBottle)) {
+            return;
         }
-
-        final boolean bobbing = mc.gameSettings.viewBobbing;
-        mc.gameSettings.viewBobbing = false;
-        mc.entityRenderer.setupCameraTransform(event.getPartialTicks(), 0);
-        GlStateManager.pushMatrix();
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.disableAlpha();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        GL11.glLineWidth(1);
+        GL11.glPushMatrix();
+        Item item = mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem();
+        double posX = renderPosX - MathHelper.cos(mc.player.rotationYaw / 180.0f * 3.1415927f) * 0.16f;
+        double posY = renderPosY + mc.player.getEyeHeight() - 0.1000000014901161;
+        double posZ = renderPosZ - MathHelper.sin(mc.player.rotationYaw / 180.0f * 3.1415927f) * 0.16f;
+        double motionX = -MathHelper.sin(mc.player.rotationYaw / 180.0f * 3.1415927f) * MathHelper.cos(mc.player.rotationPitch / 180.0f * 3.1415927f) * ((item instanceof ItemBow) ? 1.0 : 0.4);
+        double motionY = -MathHelper.sin(mc.player.rotationPitch / 180.0f * 3.1415927f) * ((item instanceof ItemBow) ? 1.0 : 0.4);
+        double motionZ = MathHelper.cos(mc.player.rotationYaw / 180.0f * 3.1415927f) * MathHelper.cos(mc.player.rotationPitch / 180.0f * 3.1415927f) * ((item instanceof ItemBow) ? 1.0 : 0.4);
+        int var6 = 72000 - mc.player.getItemInUseCount();
+        float power = var6 / 20.0f;
+        power = (power * power + power * 2.0f) / 3.0f;
+        if (power > 1.0f) {
+            power = 1.0f;
+        }
+        float distance = MathHelper.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
+        motionX /= distance;
+        motionY /= distance;
+        motionZ /= distance;
+        float pow = (item instanceof ItemBow) ? (power * 2.0f) : ((item instanceof ItemFishingRod) ? 1.25f : ((mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == Items.EXPERIENCE_BOTTLE) ? 0.9f : 1.0f));
+        motionX *= pow * ((item instanceof ItemFishingRod) ? 0.75f : ((mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == Items.EXPERIENCE_BOTTLE) ? 0.75f : 1.5f));
+        motionY *= pow * ((item instanceof ItemFishingRod) ? 0.75f : ((mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == Items.EXPERIENCE_BOTTLE) ? 0.75f : 1.5f));
+        motionZ *= pow * ((item instanceof ItemFishingRod) ? 0.75f : ((mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == Items.EXPERIENCE_BOTTLE) ? 0.75f : 1.5f));
+        enableGL3D(2);
+        if (power > 0.6f) {
+            GlStateManager.color(0.0f, 1.0f, 0.0f, 1.0f);
+        } else {
+            GlStateManager.color(0.8f, 0.5f, 0.0f, 1.0f);
+        }
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
-        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
-        GlStateManager.disableDepth();
-        GL11.glEnable(GL32.GL_DEPTH_CLAMP);
-        final Tessellator tessellator = Tessellator.getInstance();
-        final BufferBuilder bufferbuilder = tessellator.getBuffer();
-
-        while (!flightPoint.isEmpty()) {
-            bufferbuilder.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
-            Vec3d head = flightPoint.poll();
-            bufferbuilder.pos(head.x, head.y, head.z).color(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f).endVertex();
-
-            if (flightPoint.peek() != null) {
-                Vec3d point = flightPoint.peek();
-                bufferbuilder.pos(point.x, point.y, point.z).color(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f).endVertex();
+        float size = (float) ((item instanceof ItemBow) ? 0.3 : 0.25);
+        boolean hasLanded = false;
+        Entity landingOnEntity = null;
+        RayTraceResult landingPosition = null;
+        while (!hasLanded && posY > 0.0) {
+            Vec3d present = new Vec3d(posX, posY, posZ);
+            Vec3d future = new Vec3d(posX + motionX, posY + motionY, posZ + motionZ);
+            RayTraceResult possibleLandingStrip = mc.world.rayTraceBlocks(present, future, false, true, false);
+            if (possibleLandingStrip != null && possibleLandingStrip.typeOfHit != RayTraceResult.Type.MISS) {
+                landingPosition = possibleLandingStrip;
+                hasLanded = true;
             }
-
-            tessellator.draw();
-        }
-
-        GlStateManager.shadeModel(GL11.GL_FLAT);
-        GL11.glDisable(GL11.GL_LINE_SMOOTH);
-        GlStateManager.enableDepth();
-        GL11.glDisable(GL32.GL_DEPTH_CLAMP);
-        GlStateManager.disableBlend();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableTexture2D();
-        GlStateManager.popMatrix();
-
-        mc.gameSettings.viewBobbing = bobbing;
-        mc.entityRenderer.setupCameraTransform(event.getPartialTicks(), 0);
-
-        if (flightPath.collided) {
-            final RayTraceResult hit = flightPath.target;
-            AxisAlignedBB bb = null;
-
-            if (hit.typeOfHit == RayTraceResult.Type.BLOCK) {
-                final BlockPos blockpos = hit.getBlockPos();
-                final IBlockState iblockstate = mc.world.getBlockState(blockpos);
-
-                if (iblockstate.getMaterial() != Material.AIR && mc.world.getWorldBorder().contains(blockpos)) {
-                    final Vec3d interp = MathUtil.interpolateEntity(mc.player, mc.getRenderPartialTicks());
-                    bb = iblockstate.getSelectedBoundingBox(mc.world, blockpos).grow(0.0020000000949949026D).offset(-interp.x, -interp.y, -interp.z);
-                }
-            } else if (hit.typeOfHit == RayTraceResult.Type.ENTITY && hit.entityHit != null) {
-                final AxisAlignedBB entityBB = hit.entityHit.getEntityBoundingBox();
-                if (entityBB != null) {
-                    bb = new AxisAlignedBB(entityBB.minX - mc.getRenderManager().viewerPosX, entityBB.minY - mc.getRenderManager().viewerPosY, entityBB.minZ - mc.getRenderManager().viewerPosZ, entityBB.maxX - mc.getRenderManager().viewerPosX, entityBB.maxY - mc.getRenderManager().viewerPosY, entityBB.maxZ - mc.getRenderManager().viewerPosZ);
-                }
-            }
-
-            if (bb != null) {
-                RenderUtil.drawESPOutline(bb, color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),1);
-            }
-        }
-    }
-
-    private ThrowableType getTypeFromCurrentItem(EntityPlayerSP player) {
-        // Check if we're holding an item first
-        if (player.getHeldItemMainhand() == null) {
-            return ThrowableType.NONE;
-        }
-
-        final ItemStack itemStack = player.getHeldItem(EnumHand.MAIN_HAND);
-        // Check what type of item this is
-        switch (Item.getIdFromItem(itemStack.getItem())) {
-            case 261: // ItemBow
-                if (player.isHandActive())
-                    return ThrowableType.ARROW;
-                break;
-            case 346: // ItemFishingRod
-                return ThrowableType.FISHING_ROD;
-            case 438: //splash potion
-            case 441: //splash potion linger
-                return ThrowableType.POTION;
-            case 384: // ItemExpBottle
-                return ThrowableType.EXPERIENCE;
-            case 332: // ItemSnowball
-            case 344: // ItemEgg
-            case 368: // ItemEnderPearl
-                return ThrowableType.NORMAL;
-            default:
-                break;
-        }
-
-        return ThrowableType.NONE;
-    }
-
-    enum ThrowableType {
-        /**
-         * Represents a non-throwable object.
-         */
-        NONE(0.0f, 0.0f),
-
-        /**
-         * Arrows fired from a bow.
-         */
-        ARROW(1.5f, 0.05f),
-
-        /**
-         * Splash potion entities
-         */
-        POTION(0.5f, 0.05f),
-
-        /**
-         * Experience bottles.
-         */
-        EXPERIENCE(0.7F, 0.07f),
-
-        /**
-         * The fishhook entity with a fishing rod.
-         */
-        FISHING_ROD(1.5f, 0.04f),
-
-        /**
-         * Any throwable entity that doesn't have unique
-         * world velocity/gravity constants.
-         */
-        NORMAL(1.5f, 0.03f);
-
-        private final float velocity;
-        private final float gravity;
-
-        ThrowableType(float velocity, float gravity) {
-            this.velocity = velocity;
-            this.gravity = gravity;
-        }
-
-        /**
-         * The initial velocity of the entity.
-         *
-         * @return entity velocity
-         */
-
-        public float getVelocity() {
-            return velocity;
-        }
-
-        /**
-         * The constant gravity applied to the entity.
-         *
-         * @return constant world gravity
-         */
-        public float getGravity() {
-            return gravity;
-        }
-    }
-
-    /**
-     * A class used to mimic the flight of an entity.  Actual
-     * implementation resides in multiple classes but the parent of all
-     * of them is {@link net.minecraft.entity.projectile.EntityThrowable}
-     */
-    final class FlightPath {
-        private EntityPlayerSP shooter;
-        private Vec3d position;
-        private Vec3d motion;
-        private float yaw;
-        private float pitch;
-        private AxisAlignedBB boundingBox;
-        private boolean collided;
-        private RayTraceResult target;
-        private ThrowableType throwableType;
-
-        FlightPath(EntityPlayerSP player, ThrowableType throwableType) {
-            this.shooter = player;
-            this.throwableType = throwableType;
-
-            // Set the starting angles of the entity
-            this.setLocationAndAngles(this.shooter.posX, this.shooter.posY + this.shooter.getEyeHeight(), this.shooter.posZ,
-                    this.shooter.rotationYaw, this.shooter.rotationPitch);
-
-            Vec3d startingOffset = new Vec3d(MathHelper.cos(this.yaw / 180.0F * (float) Math.PI) * 0.16F, 0.1d,
-                    MathHelper.sin(this.yaw / 180.0F * (float) Math.PI) * 0.16F);
-
-            this.position = this.position.subtract(startingOffset);
-            // Update the entity's bounding box
-            this.setPosition(this.position);
-
-            // Set the entity's motion based on the shooter's rotations
-            this.motion = new Vec3d(-MathHelper.sin(this.yaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.pitch / 180.0F * (float) Math.PI),
-                    -MathHelper.sin(this.pitch / 180.0F * (float) Math.PI),
-                    MathHelper.cos(this.yaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.pitch / 180.0F * (float) Math.PI));
-
-            this.setThrowableHeading(this.motion, this.getInitialVelocity());
-        }
-
-
-        public void onUpdate() {
-            Vec3d prediction = this.position.add(this.motion);
-            RayTraceResult blockCollision = this.shooter.getEntityWorld().rayTraceBlocks(this.position, prediction,
-                    this.throwableType == ThrowableType.FISHING_ROD, !this.collidesWithNoBoundingBox(), false);
-            if (blockCollision != null) {
-                prediction = blockCollision.hitVec;
-            }
-            this.onCollideWithEntity(prediction, blockCollision);
-            if (this.target != null) {
-                this.collided = true;
-                this.setPosition(this.target.hitVec);
-                return;
-            }
-            if (this.position.y <= 0.0d) {
-                this.collided = true;
-                return;
-            }
-            this.position = this.position.add(this.motion);
-            float motionModifier = 0.99F;
-            if (this.shooter.getEntityWorld().isMaterialInBB(this.boundingBox, Material.WATER)) {
-                motionModifier = this.throwableType == ThrowableType.ARROW ? 0.6F : 0.8F;
-            }
-            if (this.throwableType == ThrowableType.FISHING_ROD) {
-                motionModifier = 0.92f;
-            }
-            this.motion = MathUtil.mult(this.motion, motionModifier);
-            this.motion = this.motion.subtract(0.0d, this.getGravityVelocity(), 0.0d);
-            // Update the position and bounding box
-            this.setPosition(this.position);
-        }
-
-        private boolean collidesWithNoBoundingBox() {
-            switch (this.throwableType) {
-                case FISHING_ROD:
-                case NORMAL:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private void onCollideWithEntity(Vec3d prediction, RayTraceResult blockCollision) {
-            Entity collidingEntity = null;
-            RayTraceResult collidingPosition = null;
-
-            double currentDistance = 0.0d;
-            // Get all possible collision entities disregarding the local player
-            List<Entity> collisionEntities = mc.world.getEntitiesWithinAABBExcludingEntity(this.shooter, this.boundingBox.expand(this.motion.x, this.motion.y, this.motion.z).grow(1.0D, 1.0D, 1.0D));
-
-            // Loop through every loaded entity in the world
-            for (Entity entity : collisionEntities) {
-                // Check if we can collide with the entity or it's ourself
-                if (!entity.canBeCollidedWith()) {
-                    continue;
-                }
-
-                // Check if we collide with our bounding box
-                float collisionSize = entity.getCollisionBorderSize();
-                AxisAlignedBB expandedBox = entity.getEntityBoundingBox().expand(collisionSize, collisionSize, collisionSize);
-                RayTraceResult objectPosition = expandedBox.calculateIntercept(this.position, prediction);
-
-                // Check if we have a collision
-                if (objectPosition != null) {
-                    double distanceTo = this.position.distanceTo(objectPosition.hitVec);
-
-                    // Check if we've gotten a closer entity
-                    if (distanceTo < currentDistance || currentDistance == 0.0D) {
-                        collidingEntity = entity;
-                        collidingPosition = objectPosition;
-                        currentDistance = distanceTo;
+            AxisAlignedBB arrowBox = new AxisAlignedBB(posX - size, posY - size, posZ - size, posX + size, posY + size, posZ + size);
+            List entities = this.getEntitiesWithinAABB(arrowBox.offset(motionX, motionY, motionZ).expand(1.0, 1.0, 1.0));
+            for (Object entity : entities) {
+                Entity boundingBox = (Entity) entity;
+                if (boundingBox.canBeCollidedWith() && boundingBox != mc.player) {
+                    float var7 = 0.3f;
+                    AxisAlignedBB var8 = boundingBox.getEntityBoundingBox().expand(var7, var7, var7);
+                    RayTraceResult possibleEntityLanding = var8.calculateIntercept(present, future);
+                    if (possibleEntityLanding == null) {
+                        continue;
                     }
+                    hasLanded = true;
+                    landingOnEntity = boundingBox;
+                    landingPosition = possibleEntityLanding;
                 }
             }
+            if (landingOnEntity != null) {
+                GlStateManager.color(1.0f, 0.0f, 0.0f, 1.0f);
+            }
+            posX += motionX;
+            posY += motionY;
+            posZ += motionZ;
+            float motionAdjustment = 0.99f;
+            motionX *= motionAdjustment;
+            motionY *= motionAdjustment;
+            motionZ *= motionAdjustment;
+            motionY -= ((item instanceof ItemBow) ? 0.05 : 0.03);
+            drawLine3D(posX - renderPosX, posY - renderPosY, posZ - renderPosZ);
+        }
+        if (landingPosition != null && landingPosition.typeOfHit == RayTraceResult.Type.BLOCK) {
+            GlStateManager.translate(posX - renderPosX, posY - renderPosY, posZ - renderPosZ);
+            int side = landingPosition.sideHit.getIndex();
+            if (side == 2) {
+                GlStateManager.rotate(90.0f, 1.0f, 0.0f, 0.0f);
+            } else if (side == 3) {
+                GlStateManager.rotate(90.0f, 1.0f, 0.0f, 0.0f);
+            } else if (side == 4) {
+                GlStateManager.rotate(90.0f, 0.0f, 0.0f, 1.0f);
+            } else if (side == 5) {
+                GlStateManager.rotate(90.0f, 0.0f, 0.0f, 1.0f);
+            }
+            Cylinder c = new Cylinder();
+            GlStateManager.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
+            c.setDrawStyle(100011);
+            if (landingOnEntity != null) {
+                GlStateManager.color(0.0f, 0.0f, 0.0f, 1.0f);
+                GL11.glLineWidth(2.5f);
+                c.draw(0.6f, 0.3f, 0.0f, 4, 1);
+                GL11.glLineWidth(0.1f);
+                GlStateManager.color(1.0f, 0.0f, 0.0f, 1.0f);
+            }
+            c.draw(0.6f, 0.3f, 0.0f, 4, 1);
+        }
+        disableGL3D();
+        GL11.glPopMatrix();
+    }
 
-            // Check if we had an entity
-            if (collidingEntity != null) {
-                // Set our target to the result
-                this.target = new RayTraceResult(collidingEntity, collidingPosition.hitVec);
-            } else {
-                // Fallback to the block collision
-                this.target = blockCollision;
+    public void enableGL3D(float lineWidth) {
+        GL11.glDisable(3008);
+        GL11.glEnable(3042);
+        GL11.glBlendFunc(770, 771);
+        GL11.glDisable(3553);
+        GL11.glDisable(2929);
+        GL11.glDepthMask(false);
+        GL11.glEnable(2884);
+        mc.entityRenderer.disableLightmap();
+        GL11.glEnable(2848);
+        GL11.glHint(3154, 4354);
+        GL11.glHint(3155, 4354);
+        GL11.glLineWidth(lineWidth);
+    }
+
+    public void disableGL3D() {
+        GL11.glEnable(3553);
+        GL11.glEnable(2929);
+        GL11.glDisable(3042);
+        GL11.glEnable(3008);
+        GL11.glDepthMask(true);
+        GL11.glCullFace(1029);
+        GL11.glDisable(2848);
+        GL11.glHint(3154, 4352);
+        GL11.glHint(3155, 4352);
+    }
+
+    public void drawLine3D(double var1, double var2, double var3) {
+        GL11.glVertex3d(var1, var2, var3);
+    }
+
+    private List getEntitiesWithinAABB(AxisAlignedBB bb) {
+        ArrayList list = new ArrayList<>();
+        int chunkMinX = MathHelper.floor((bb.minX - 2.0) / 16.0);
+        int chunkMaxX = MathHelper.floor((bb.maxX + 2.0) / 16.0);
+        int chunkMinZ = MathHelper.floor((bb.minZ - 2.0) / 16.0);
+        int chunkMaxZ = MathHelper.floor((bb.maxZ + 2.0) / 16.0);
+        for (int x = chunkMinX; x <= chunkMaxX; ++x) {
+            for (int z = chunkMinZ; z <= chunkMaxZ; ++z) {
+                if (mc.world.getChunkProvider().getLoadedChunk(x, z) != null) {
+                    mc.world.getChunkFromChunkCoords(x, z).getEntitiesWithinAABBForEntity(mc.player, bb, list, null);
+                }
             }
         }
-
-        /**
-         * Return the initial velocity of the entity at it's exact starting
-         * moment in flight.
-         *
-         * @return entity velocity in flight
-         */
-        private float getInitialVelocity() {
-            switch (this.throwableType) {
-                // Arrows use the current use duration as a velocity multplier
-                case ARROW:
-                    // Check how long we've been using the bow
-                    int useDuration = this.shooter.getHeldItem(EnumHand.MAIN_HAND).getItem().getMaxItemUseDuration(this.shooter.getHeldItem(EnumHand.MAIN_HAND)) - this.shooter.getItemInUseCount();
-                    float velocity = (float) useDuration / 20.0F;
-                    velocity = (velocity * velocity + velocity * 2.0F) / 3.0F;
-                    if (velocity > 1.0F) {
-                        velocity = 1.0F;
-                    }
-
-                    // When the arrow is spawned inside of ItemBow, they multiply it by 2
-                    return (velocity * 2.0f) * throwableType.getVelocity();
-                default:
-                    return throwableType.getVelocity();
-            }
-        }
-        
-        private float getGravityVelocity() {
-            return throwableType.getGravity();
-        }
-
-        private void setLocationAndAngles(double x, double y, double z, float yaw, float pitch) {
-            this.position = new Vec3d(x, y, z);
-            this.yaw = yaw;
-            this.pitch = pitch;
-        }
-
-        private void setPosition(Vec3d position) {
-            this.position = new Vec3d(position.x, position.y, position.z);
-            // Usually this is this.width / 2.0f but throwables change
-            double entitySize = (this.throwableType == ThrowableType.ARROW ? 0.5d : 0.25d) / 2.0d;
-            // Update the path's current bounding box
-            this.boundingBox = new AxisAlignedBB(position.x - entitySize,
-                    position.y - entitySize,
-                    position.z - entitySize,
-                    position.x + entitySize,
-                    position.y + entitySize,
-                    position.z + entitySize);
-        }
-        
-        private void setThrowableHeading(Vec3d motion, float velocity) {
-            // Divide the current motion by the length of the vector
-            this.motion = MathUtil.div(motion, (float) motion.lengthVector());
-            // Multiply by the velocity
-            this.motion = MathUtil.mult(this.motion, velocity);
-        }
-        
-        public boolean isCollided() {
-            return collided;
-        }
-        
-        public RayTraceResult getCollidingTarget() {
-            return target;
-        }
+        return list;
     }
 }

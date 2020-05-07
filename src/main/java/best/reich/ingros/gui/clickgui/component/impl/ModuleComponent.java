@@ -88,7 +88,7 @@ public class ModuleComponent extends Component {
                             final ToggleableModule mod = (ToggleableModule) getModule();
                             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                                 mod.setHidden(!mod.isHidden());
-                                Logger.printMessage("Set " + mod.getLabel() + " to " + (mod.isHidden() ? "hidden in the arraylist!" : "shown in the arraylist!"));
+                                Logger.printMessage("Set " + mod.getLabel() + " to " + (mod.isHidden() ? "hidden in the arraylist!" : "shown in the arraylist!"),true);
                             }else
                                 mod.setEnabled(!mod.isEnabled());
                         }
