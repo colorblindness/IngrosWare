@@ -1,6 +1,7 @@
 package best.reich.ingros.mixin.impl;
 
 import best.reich.ingros.IngrosWare;
+import best.reich.ingros.events.entity.EntityEvent;
 import best.reich.ingros.events.other.SafeWalkEvent;
 import best.reich.ingros.mixin.accessors.IEntity;
 import net.minecraft.entity.Entity;
@@ -28,6 +29,22 @@ public abstract class MixinEntity implements IEntity {
     public boolean inPortal;
     @Shadow
     public void move(MoverType type, double x, double y, double z) {}
+
+
+    @Redirect(method = "applyEntityCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(DDD)V"))
+    public void addVelocity(Entity entity, double x, double y, double z) {
+        EntityEvent.EntityCollision event = new EntityEvent.EntityCollision(entity, x, y, z);
+        IngrosWare.INSTANCE.bus.fireEvent(event);
+        if(event.isCancelled()){
+            return;
+        }
+
+        entity.motionX += x;
+        entity.motionY += y;
+        entity.motionZ += z;
+
+        entity.isAirBorne = true;
+    }
 
     @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isSneaking()Z"))
     public boolean isSneaking(Entity entity) {

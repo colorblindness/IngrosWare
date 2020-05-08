@@ -2,7 +2,7 @@ package best.reich.ingros.manager;
 
 import best.reich.ingros.IngrosWare;
 import best.reich.ingros.module.persistent.*;
-import best.reich.ingros.module.toggles.*;
+import best.reich.ingros.module.modules.*;
 import best.reich.ingros.util.ClassUtil;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -48,6 +48,8 @@ public class ModuleManager extends AbstractModuleManager {
         register(new FullBright());
         register(new Strafe());
         register(new NoBossBar());
+        register(new DevCrystalAura());
+
         loadExternalModules();
         /* Move if gay */
         register(new Overlay());

@@ -1,5 +1,6 @@
-package best.reich.ingros.module.toggles;
+package best.reich.ingros.module.modules;
 
+import best.reich.ingros.events.entity.EntityEvent;
 import best.reich.ingros.events.entity.UpdateEvent;
 import best.reich.ingros.events.network.PacketEvent;
 import me.xenforu.kelo.module.ModuleCategory;
@@ -14,6 +15,8 @@ import net.minecraft.network.play.server.SPacketExplosion;
 /**
  * made by Xen for IngrosWare
  * at 1/3/2020
+ *
+ * Updated a bit. -Zim 5/5/20
  **/
 @ModuleManifest(label = "NoVelocity", category = ModuleCategory.COMBAT, color = 0x717171)
 public class NoVelocity extends ToggleableModule {
@@ -60,6 +63,13 @@ public class NoVelocity extends ToggleableModule {
                     event.setCancelled(true);
                 }
             }
+        }
+    }
+
+    @Subscribe
+    public void entityCollision(EntityEvent.EntityCollision event){
+        if (!aac && event.getEntity() == mc.player) {
+            event.setCancelled(true);
         }
     }
 

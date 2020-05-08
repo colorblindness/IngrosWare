@@ -1,4 +1,4 @@
-package best.reich.ingros.module.toggles;
+package best.reich.ingros.module.modules;
 
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
