@@ -19,7 +19,7 @@ public class PositionCommand extends Command {
                 case "vclip":
 
                     mc.player.setPositionAndUpdate(mc.player.posX, mc.player.posY + distance, mc.player.posZ);
-                    Logger.printMessage("Vclipped " + distance);
+                    Logger.printMessage("Vclipped " + distance,true);
                     break;
                 case "h":
                 case "hclip":
@@ -30,14 +30,14 @@ public class PositionCommand extends Command {
                         } else {
                             Minecraft.getMinecraft().player.setPosition(Minecraft.getMinecraft().player.posX + dir.x * distance, Minecraft.getMinecraft().player.posY, Minecraft.getMinecraft().player.posZ + dir.z * distance);
                         }
-                        Logger.printMessage("Teleported you " + ((distance > 0) ? "forward" : "backward") + " " + distance);
+                        Logger.printMessage("Teleported you " + ((distance > 0) ? "forward" : "backward") + " " + distance,true);
                     }
                     break;
                 default:
                     break;
             }
         } else {
-            Logger.printMessage("Invalid arguments! usage position v/h <ammount>");
+            Logger.printMessage("Invalid arguments! usage position v/h <ammount>",true);
         }
 
     }

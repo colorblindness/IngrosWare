@@ -19,17 +19,17 @@ public class KeybindCommand extends Command {
                 int keyCode = Keyboard.getKeyIndex(args[2].toUpperCase());
                 if (keyCode != -1) {
                     module.setBind(keyCode);
-                    Logger.printMessage(module.getLabel() + " is now bound to \"" + Keyboard.getKeyName(keyCode) + "\".");
+                    Logger.printMessage(module.getLabel() + " is now bound to \"" + Keyboard.getKeyName(keyCode) + "\".",true);
                 } else {
-                    Logger.printMessage("That is not a valid key code.");
+                    Logger.printMessage("That is not a valid key code.",true);
                 }
             } else {
-                Logger.printMessage("That module does not exist.");
-                Logger.printMessage("Type \"modules\" for a list of all modules.");
+                Logger.printMessage("That module does not exist.",true);
+                Logger.printMessage("Type \"modules\" for a list of all modules.",true);
             }
         } else {
-            Logger.printMessage("Invalid arguments.");
-            Logger.printMessage("Usage: \"bind [module] [key]\"");
+            Logger.printMessage("Invalid arguments.",true);
+            Logger.printMessage("Usage: \"bind [module] [key]\"",true);
         }
     }
 }

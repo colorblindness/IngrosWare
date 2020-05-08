@@ -22,6 +22,21 @@ public class MathUtil {
                 entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * time,
                 entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * time);
     }
+    public static Vec3d mult(Vec3d factor, Vec3d multiplier) {
+        return new Vec3d(factor.x * multiplier.x, factor.y * multiplier.y, factor.z * multiplier.z);
+    }
+
+    public static Vec3d mult(Vec3d factor, float multiplier) {
+        return new Vec3d(factor.x * multiplier, factor.y * multiplier, factor.z * multiplier);
+    }
+
+    public static Vec3d div(Vec3d factor, Vec3d divisor) {
+        return new Vec3d(factor.x / divisor.x, factor.y / divisor.y, factor.z / divisor.z);
+    }
+
+    public static Vec3d div(Vec3d factor, float divisor) {
+        return new Vec3d(factor.x / divisor, factor.y / divisor, factor.z / divisor);
+    }
     public static double radToDeg(double rad) {
         return rad * (float) (180.0f / Math.PI);
     }

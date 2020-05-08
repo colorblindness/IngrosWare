@@ -49,9 +49,9 @@ public class BookCommand extends Command {
             PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
             buf.writeItemStack(heldItem);
             mc.player.connection.sendPacket(new CPacketCustomPayload("MC|BSign", buf));
-            Logger.printMessage("Book Hack Success!");
+            Logger.printMessage("Book Hack Success!",true);
         } else {
-            Logger.printMessage("Pussy nigga u fucked up!");
+            Logger.printMessage("Pussy nigga u fucked up!",true);
         }
 
     }

@@ -1,6 +1,8 @@
 package best.reich.ingros.gui.clickgui.component.impl;
 
+import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
+import best.reich.ingros.module.toggles.ClickGui;
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.render.RenderUtil;
 import me.xenforu.kelo.setting.impl.BooleanSetting;
@@ -26,8 +28,9 @@ public class BooleanComponent extends Component {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
+        final ClickGui clickGui = (ClickGui) IngrosWare.INSTANCE.moduleManager.getModule("ClickGui");
         RenderUtil.drawRect(getFinishedX(), getFinishedY(), getWidth(), getHeight(), 0x92000000);
-        RenderUtil.drawBorderedRect(getFinishedX() + getWidth() - 17,getFinishedY() + 1,12,getHeight() - 2,0.5f,getBooleanSetting().getValue() ? 0xFFB3002E:0x40000000,0xFF323232);
+        RenderUtil.drawBorderedRect(getFinishedX() + getWidth() - 17,getFinishedY() + 1,12,getHeight() - 2,0.5f,getBooleanSetting().getValue() ? clickGui.color.brighter().getRGB():0x40000000,clickGui.color.getRGB());
         if (getBooleanSetting().getValue())
             RenderUtil.drawCheckMark(getFinishedX() + getWidth() - 11,getFinishedY() + 1,10,0xFFFFFFFF);
         Fonts.arialFont.drawStringWithShadow(getLabel(), getFinishedX() + 5, getFinishedY() + getHeight() / 2 - Fonts.arialFont.getStringHeight(getLabel()) / 2, getBooleanSetting().getValue() ? 0xFFFFFFFF : 0xFFAAAAAA);

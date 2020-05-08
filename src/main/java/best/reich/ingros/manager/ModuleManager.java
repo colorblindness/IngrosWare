@@ -48,8 +48,9 @@ public class ModuleManager extends AbstractModuleManager {
         register(new FullBright());
         register(new Strafe());
         register(new NoBossBar());
-        register(new DevCrystalAura());
-
+		register(new Trajectories());
+        register(new ClickGui());
+        register(new AntiFriendHit());
         loadExternalModules();
         /* Move if gay */
         register(new Overlay());

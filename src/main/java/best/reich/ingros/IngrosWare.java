@@ -1,6 +1,7 @@
 package best.reich.ingros;
 
 import best.reich.ingros.manager.*;
+import best.reich.ingros.notification.NotificationManager;
 import best.reich.ingros.util.thealtening.AltService;
 import me.xenforu.kelo.Client;
 import me.xenforu.kelo.setting.SettingManager;
@@ -21,6 +22,7 @@ public class IngrosWare extends Client {
     public ModuleManager moduleManager = new ModuleManager();
     public CommandManager commandManager = new CommandManager();
     public MacroManager macroManager = new MacroManager();
+    public NotificationManager notificationManager = new NotificationManager();
     private final AltService altService = new AltService();
     public IngrosWare() {
         super("IngrosWare", "4.0", new String[]{"x3", "carroteater", "Xenforu"});

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import me.xenforu.kelo.module.IModule;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
+import me.xenforu.kelo.setting.impl.ColorSetting;
 import me.xenforu.kelo.traits.Toggleable;
 
 /**
@@ -23,6 +24,7 @@ public class ToggleableModule implements IModule, Toggleable {
             this.label = moduleManifest.label();
             this.category = moduleManifest.category();
             this.color = moduleManifest.color();
+            this.bind = moduleManifest.bind();
             this.hidden = moduleManifest.hidden();
         }
     }
@@ -42,7 +44,7 @@ public class ToggleableModule implements IModule, Toggleable {
 
     public void setSuffix(String s) {
         if (s.length() > 0)
-        this.suffix = s.toLowerCase().substring(0, 1).toUpperCase() + s.toLowerCase().substring(1);
+            this.suffix = s.toLowerCase().substring(0, 1).toUpperCase() + s.toLowerCase().substring(1);
         else this.suffix = s;
     }
 
@@ -118,9 +120,14 @@ public class ToggleableModule implements IModule, Toggleable {
         destination.addProperty("Keybind", getBind());
 
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
-            IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this).forEach(property -> destination.addProperty(property.getLabel(), property.getValue().toString()));
+            IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this).forEach(property -> {
+                if (property instanceof ColorSetting) {
+                    final ColorSetting colorSetting = (ColorSetting) property;
+                    destination.addProperty(property.getLabel(), colorSetting.getValue().getRGB());
+                } else
+                    destination.addProperty(property.getLabel(), property.getValue().toString());
+            });
         }
-
     }
 
     @Override
@@ -132,8 +139,12 @@ public class ToggleableModule implements IModule, Toggleable {
             setBind(source.get("Keybind").getAsInt());
         }
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
-            source.entrySet().forEach(entry ->
-                    IngrosWare.INSTANCE.settingManager.getSetting(this, entry.getKey()).ifPresent(property -> property.setValue(entry.getValue().getAsString())));
+            source.entrySet().forEach(entry -> IngrosWare.INSTANCE.settingManager.getSetting(this, entry.getKey()).ifPresent(property -> {
+                if (property instanceof ColorSetting) {
+                    final ColorSetting colorSetting = (ColorSetting) property;
+                    colorSetting.setValue(entry.getValue().getAsString());
+                } else property.setValue(entry.getValue().getAsString());
+            }));
         }
     }
 }

@@ -1,6 +1,8 @@
 package best.reich.ingros.gui.clickgui.component.impl;
 
+import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
+import best.reich.ingros.module.toggles.ClickGui;
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.render.RenderUtil;
 import me.xenforu.kelo.setting.impl.NumberSetting;
@@ -29,10 +31,11 @@ public class NumberComponent extends Component {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
+        final ClickGui clickGui = (ClickGui) IngrosWare.INSTANCE.moduleManager.getModule("ClickGui");
         RenderUtil.drawRect(getFinishedX(), getFinishedY(), getWidth(), getHeight(), 0x92000000);
         Fonts.arialFont.drawStringWithShadow(getLabel() + ": " + getNumberSetting().getValue(), getFinishedX() + 5, getFinishedY() + getHeight() / 2 - Fonts.arialFont.getStringHeight(getLabel()) / 2, 0xFFFFFFFF);
         float length = MathHelper.floor(((getNumberSetting().getValue()).floatValue() - getNumberSetting().getMinimum().floatValue()) / (getNumberSetting().getMaximum().floatValue() - getNumberSetting().getMinimum().floatValue()) * (getWidth() - 10));
-        RenderUtil.drawRect(getFinishedX() + 5, getFinishedY() + getHeight() - 2, length, 2, 0xFFB3002E);
+        RenderUtil.drawRect(getFinishedX() + 5, getFinishedY() + getHeight() - 2, length, 2, clickGui.color.getRGB());
         if (sliding) {
             if (getNumberSetting().getValue() instanceof Float) {
                 float preval = ((mouseX - (getFinishedX() + 5)) * (getNumberSetting().getMaximum().floatValue() - getNumberSetting().getMinimum().floatValue()) / (getWidth() - 10) + getNumberSetting().getMinimum().floatValue());

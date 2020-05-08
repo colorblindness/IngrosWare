@@ -14,7 +14,7 @@ public class RelogCommand extends Command {
     public void execute(String[] args) {
         if (mc.world == null) return;
         if (mc.isSingleplayer()) {
-            Logger.printMessage("Cannot relog into a singleplayer server!");
+            Logger.printMessage("Cannot relog into a singleplayer server!",true);
             return;
         }
         mc.world.sendQuittingDisconnectingPacket();

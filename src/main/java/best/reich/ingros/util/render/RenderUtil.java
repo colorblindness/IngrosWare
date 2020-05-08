@@ -5,7 +5,6 @@ import me.xenforu.kelo.traits.Minecraftable;
 import me.xenforu.kelo.util.font.Fonts;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -13,23 +12,13 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.AxisAlignedBB;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
-import javax.vecmath.Vector3d;
 import java.awt.*;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.Objects;
 
 public class RenderUtil implements Minecraftable {
     private final static Frustum frustrum = new Frustum();
-    private final static FloatBuffer screenCoords = BufferUtils.createFloatBuffer(3);
-    private final static IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
-    private final static FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
-    private final static FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
 
     public static double interpolate(double current, double old, double scale) {
         return old + (current - old) * scale;
@@ -40,7 +29,12 @@ public class RenderUtil implements Minecraftable {
         hue /= speed;
         return Color.getHSBColor(hue, s, 1f).getRGB();
     }
-
+    public static void prepareScissorBox(ScaledResolution sr, float x, float y, float width, float height) {
+        float x2 = x + width;
+        float y2 = y + height;
+        int factor = sr.getScaleFactor();
+        GL11.glScissor((int) (x * factor), (int) ((sr.getScaledHeight() - y2) * factor), (int) ((x2 - x) * factor), (int) ((y2 - y) * factor));
+    }
     public static void glBillboard(float x, float y, float z) {
         float scale = 0.016666668f * 1.6f;
         GlStateManager.translate(x - ((IRenderManager) mc.getRenderManager()).getRenderPosX(), y - ((IRenderManager) mc.getRenderManager()).getRenderPosY(), z - ((IRenderManager) mc.getRenderManager()).getRenderPosZ());
@@ -354,22 +348,6 @@ public class RenderUtil implements Minecraftable {
         Entity current = mc.getRenderViewEntity();
         frustrum.setPosition(Objects.requireNonNull(current).posX, current.posY, current.posZ);
         return frustrum.isBoundingBoxInFrustum(bb);
-    }
-
-    public static ScaledResolution getResolution() {
-        return new ScaledResolution(mc);
-    }
-
-    public static Vector3d project(double x, double y, double z) {
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
-        GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
-
-        boolean result = GLU.gluProject((float) x, (float) y, (float) z, modelview, projection, viewport, modelview);
-        if (result) {
-            return new Vector3d(screenCoords.get(0), Display.getHeight() - screenCoords.get(1), screenCoords.get(2));
-        }
-        return null;
     }
 
     public static void renderTag(String name, double pX, double pY, double pZ, int color) {
