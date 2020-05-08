@@ -4,7 +4,7 @@ import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
 import best.reich.ingros.gui.clickgui.component.impl.ModuleComponent;
 import best.reich.ingros.gui.clickgui.frame.Frame;
-import best.reich.ingros.module.toggles.ClickGui;
+import best.reich.ingros.module.modules.ClickGui;
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.render.RenderUtil;
 import me.xenforu.kelo.module.IModule;

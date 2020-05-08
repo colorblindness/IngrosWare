@@ -380,7 +380,7 @@ public class DevCrystalAura extends ToggleableModule {
     public void onEnable() {
         super.onEnable();
         if (announcer) {
-            Logger.printMessage("CrystalAura Enabled!");
+            Logger.printMessage("CrystalAura Enabled!", true);
         }
     }
 
@@ -390,7 +390,7 @@ public class DevCrystalAura extends ToggleableModule {
         dmg = null;
         render = null;
         if (announcer) {
-            Logger.printMessage("CrystalAura Disabled!");
+            Logger.printMessage("CrystalAura Disabled!", true);
         }
     }
 }
