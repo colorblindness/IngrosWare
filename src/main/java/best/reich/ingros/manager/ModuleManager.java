@@ -1,8 +1,15 @@
 package best.reich.ingros.manager;
 
 import best.reich.ingros.IngrosWare;
+import best.reich.ingros.module.modules.combat.AutoArmor;
+import best.reich.ingros.module.modules.combat.KillAura;
+import best.reich.ingros.module.modules.combat.NoVelocity;
+import best.reich.ingros.module.modules.movement.*;
+import best.reich.ingros.module.modules.other.*;
+import best.reich.ingros.module.modules.player.AntiEffects;
+import best.reich.ingros.module.modules.player.AutoMine;
+import best.reich.ingros.module.modules.render.*;
 import best.reich.ingros.module.persistent.*;
-import best.reich.ingros.module.modules.*;
 import best.reich.ingros.util.ClassUtil;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -12,6 +19,7 @@ import me.xenforu.kelo.module.IModule;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.manage.AbstractModuleManager;
 import me.xenforu.kelo.module.type.ToggleableModule;
+import net.minecraft.client.Minecraft;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -26,6 +34,7 @@ public class ModuleManager extends AbstractModuleManager {
 
     @Override
     public void load() {
+        //Please for the love of all that is holy, oHare, fucking make this load the goddamn modules from the modules package!!!!!!!!
         register(new Commands());
         register(new Keybinds());
         register(new AntiEffects());
@@ -57,6 +66,8 @@ public class ModuleManager extends AbstractModuleManager {
         load(new File(IngrosWare.INSTANCE.path.toFile(), "modules").toPath());
     }
 
+
+
     @Override
     public void unload() {
         save(new File(IngrosWare.INSTANCE.path.toFile(), "modules").toPath());
@@ -68,6 +79,25 @@ public class ModuleManager extends AbstractModuleManager {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
+            if (ClassUtil.getClassesEx(dir.getPath()).isEmpty()) System.out.println("[IngrosWare] No external modules found!");
+            for (Class clazz : ClassUtil.getClassesEx(dir.getPath())) {
+                if (clazz != null && ToggleableModule.class.isAssignableFrom(clazz)) {
+                    final ToggleableModule module = (ToggleableModule) clazz.newInstance();
+                    if (module != null) {
+                        register(module);
+                        System.out.println("[IngrosWare] Found external module " + module.getLabel());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadInternalModules() {
+        try {
+
+            final File dir = new File(Minecraft.getMinecraft().mcDataDir.getPath() + File.separator + "mods");
             if (ClassUtil.getClassesEx(dir.getPath()).isEmpty()) System.out.println("[IngrosWare] No external modules found!");
             for (Class clazz : ClassUtil.getClassesEx(dir.getPath())) {
                 if (clazz != null && ToggleableModule.class.isAssignableFrom(clazz)) {

@@ -1,7 +1,7 @@
 package best.reich.ingros.mixin.impl;
 
 import best.reich.ingros.IngrosWare;
-import best.reich.ingros.module.modules.Visuals;
+import best.reich.ingros.module.modules.render.Visuals;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.entity.Entity;

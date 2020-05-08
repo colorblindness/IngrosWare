@@ -1,6 +1,10 @@
 package best.reich.ingros.gui.clickgui.component.impl;
 
 import best.reich.ingros.gui.clickgui.component.Component;
+<<<<<<< Updated upstream
+=======
+import best.reich.ingros.module.modules.render.ClickGui;
+>>>>>>> Stashed changes
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.logging.Logger;
 import best.reich.ingros.util.render.RenderUtil;

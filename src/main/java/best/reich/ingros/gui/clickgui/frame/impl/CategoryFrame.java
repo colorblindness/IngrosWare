@@ -4,6 +4,11 @@ import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
 import best.reich.ingros.gui.clickgui.component.impl.ModuleComponent;
 import best.reich.ingros.gui.clickgui.frame.Frame;
+<<<<<<< Updated upstream
+=======
+import best.reich.ingros.module.modules.render.ClickGui;
+import best.reich.ingros.util.game.MouseUtil;
+>>>>>>> Stashed changes
 import best.reich.ingros.util.render.RenderUtil;
 import me.xenforu.kelo.module.IModule;
 import me.xenforu.kelo.module.ModuleCategory;
