@@ -26,7 +26,7 @@ public class ClassUtil {
             final ZipFile zip = new ZipFile(file);
             for (Enumeration list = zip.entries(); list.hasMoreElements(); ) {
                 final ZipEntry entry = (ZipEntry) list.nextElement();
-                if (entry.getName().contains("best/reich/ingros/module/toggles/") && entry.getName().contains(".class")) {
+                if (entry.getName().contains("best/reich/ingros/module/modules/") && entry.getName().contains(".class")) {
                     classes.add(classLoader.loadClass(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.')));
                 }
             }
