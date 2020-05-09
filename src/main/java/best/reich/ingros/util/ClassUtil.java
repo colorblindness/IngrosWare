@@ -17,6 +17,25 @@ import java.util.zip.ZipFile;
  * at 1/3/2020
  **/
 public class ClassUtil {
+    public static List<Class<?>> getClassesIn(String path) {
+        final List<Class<?>> classes = new ArrayList<>();
+
+        try {
+            final File file = new File(path);
+            final ClassLoader classLoader = URLClassLoader.newInstance(new URL[]{file.toURI().toURL()}, IngrosWare.class.getClassLoader());
+            final ZipFile zip = new ZipFile(file);
+            for (Enumeration list = zip.entries(); list.hasMoreElements(); ) {
+                final ZipEntry entry = (ZipEntry) list.nextElement();
+                if (entry.getName().contains("best/reich/ingros/module/toggles/") && entry.getName().contains(".class")) {
+                    classes.add(classLoader.loadClass(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.')));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return classes;
+    }
+
     public static List<Class<?>> getClassesEx(String path) {
         final List<Class<?>> classes = new ArrayList<>();
 

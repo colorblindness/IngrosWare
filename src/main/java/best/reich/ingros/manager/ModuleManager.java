@@ -1,8 +1,9 @@
 package best.reich.ingros.manager;
 
 import best.reich.ingros.IngrosWare;
-import best.reich.ingros.module.persistent.*;
-import best.reich.ingros.module.toggles.*;
+import best.reich.ingros.module.persistent.Commands;
+import best.reich.ingros.module.persistent.Keybinds;
+import best.reich.ingros.module.persistent.Overlay;
 import best.reich.ingros.util.ClassUtil;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -28,32 +29,9 @@ public class ModuleManager extends AbstractModuleManager {
     public void load() {
         register(new Commands());
         register(new Keybinds());
-        register(new AntiEffects());
-        register(new AntiTabComplete());
-        register(new AutoArmor());
-        register(new AutoMine());
-        register(new FakeVanilla());
-        register(new FastIce());
-        register(new Flight());
-        register(new KillAura());
-        register(new Notifications());
-        register(new NoVelocity());
-        register(new SafeWalk());
-        register(new Speed());
-        register(new Sprint());
-        register(new Visuals());
-        register(new FastBreak());
-        register(new Crasher());
-        register(new Phase());
-        register(new FullBright());
-        register(new Strafe());
-        register(new NoBossBar());
-        register(new Trajectories());
-        register(new ClickGui());
-        register(new AntiFriendHit());
-        loadExternalModules();
-        /* Move if gay */
         register(new Overlay());
+        loadInternalModules();
+        loadExternalModules();
         getValues().forEach(IModule::init);
         load(new File(IngrosWare.INSTANCE.path.toFile(), "modules").toPath());
     }
@@ -61,6 +39,37 @@ public class ModuleManager extends AbstractModuleManager {
     @Override
     public void unload() {
         save(new File(IngrosWare.INSTANCE.path.toFile(), "modules").toPath());
+    }
+
+    private String getJarFolder() {
+        // get name and path
+        String name = getClass().getName().replace('.', '/');
+        name = getClass().getResource("/" + name + ".class").toString();
+        // remove junk
+        name = name.substring(0, name.indexOf(".jar") + 4);
+        name = name.substring(name.lastIndexOf(':')-1).replace('%', ' ');
+        String s = "";
+        for (int k=0; k<name.length(); k++) {
+            s += name.charAt(k);
+            if (name.charAt(k) == ' ') k += 2;
+        }
+        return s.replace('/', File.separatorChar);
+    }
+
+    private void loadInternalModules() {
+        try {
+            System.out.println("DIR: " + getJarFolder());
+            if (ClassUtil.getClassesIn(getJarFolder()).isEmpty()) System.out.println("[IngrosWare] No internal modules found!");
+            for (Class clazz : ClassUtil.getClassesIn(getJarFolder())) {
+                if (clazz != null && ToggleableModule.class.isAssignableFrom(clazz)) {
+                    final ToggleableModule module = (ToggleableModule) clazz.newInstance();
+                    register(module);
+                    System.out.println("[IngrosWare] Found internal module " + module.getLabel());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadExternalModules() {
@@ -73,10 +82,8 @@ public class ModuleManager extends AbstractModuleManager {
             for (Class clazz : ClassUtil.getClassesEx(dir.getPath())) {
                 if (clazz != null && ToggleableModule.class.isAssignableFrom(clazz)) {
                     final ToggleableModule module = (ToggleableModule) clazz.newInstance();
-                    if (module != null) {
-                        register(module);
-                        System.out.println("[IngrosWare] Found external module " + module.getLabel());
-                    }
+                    register(module);
+                    System.out.println("[IngrosWare] Found external module " + module.getLabel());
                 }
             }
         } catch (Exception e) {

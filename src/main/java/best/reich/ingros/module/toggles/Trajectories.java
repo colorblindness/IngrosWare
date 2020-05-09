@@ -4,7 +4,6 @@ import best.reich.ingros.events.render.Render3DEvent;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.module.type.ToggleableModule;
-import me.xenforu.kelo.setting.annotation.Setting;
 import net.b0at.api.event.Subscribe;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -18,18 +17,12 @@ import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Cylinder;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 @ModuleManifest(label = "Trajectories", category = ModuleCategory.RENDER, color = 0xAE85DE)
 public class Trajectories extends ToggleableModule {
-    private final Queue<Vec3d> flightPoint = new ConcurrentLinkedQueue<>();
-    @Setting("Color")
-    public Color color = new Color(200, 33, 168);
 
     @Subscribe
     public void onRender3D(Render3DEvent event) {
@@ -86,7 +79,7 @@ public class Trajectories extends ToggleableModule {
                 hasLanded = true;
             }
             AxisAlignedBB arrowBox = new AxisAlignedBB(posX - size, posY - size, posZ - size, posX + size, posY + size, posZ + size);
-            List entities = this.getEntitiesWithinAABB(arrowBox.offset(motionX, motionY, motionZ).expand(1.0, 1.0, 1.0));
+             List entities = this.getEntitiesWithinAABB(arrowBox.offset(motionX, motionY, motionZ).expand(1.0, 1.0, 1.0));
             for (Object entity : entities) {
                 Entity boundingBox = (Entity) entity;
                 if (boundingBox.canBeCollidedWith() && boundingBox != mc.player) {

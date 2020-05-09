@@ -6,6 +6,8 @@ import me.xenforu.kelo.module.IModule;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.setting.impl.ColorSetting;
+import me.xenforu.kelo.setting.impl.StringSetting;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * made by Xen for Kelo
@@ -44,6 +46,8 @@ public class PersistentModule implements IModule {
         return mc.player != null;
     }
 
+
+
     @Override
     public void save(JsonObject destination) {
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
@@ -51,8 +55,11 @@ public class PersistentModule implements IModule {
                 if (property instanceof ColorSetting) {
                     final ColorSetting colorSetting = (ColorSetting) property;
                     destination.addProperty(property.getLabel(), colorSetting.getValue().getRGB());
-                } else
-                    destination.addProperty(property.getLabel(), property.getValue().toString());
+                } else if (property instanceof StringSetting) {
+                    final StringSetting stringSetting = (StringSetting) property;
+                    final String escapedStr = StringEscapeUtils.escapeJava(stringSetting.getValue());
+                    destination.addProperty(property.getLabel(), escapedStr);
+                } else destination.addProperty(property.getLabel(), property.getValue().toString());
             });
         }
     }
@@ -64,6 +71,9 @@ public class PersistentModule implements IModule {
                 if (property instanceof ColorSetting) {
                     final ColorSetting colorSetting = (ColorSetting) property;
                     colorSetting.setValue(entry.getValue().getAsString());
+                } else if (property instanceof StringSetting) {
+                    final StringSetting stringSetting = (StringSetting) property;
+                    stringSetting.setValue(StringEscapeUtils.unescapeJava(entry.getValue().getAsString()));
                 } else property.setValue(entry.getValue().getAsString());
             }));
         }

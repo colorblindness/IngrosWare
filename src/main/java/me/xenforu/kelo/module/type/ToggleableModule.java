@@ -6,7 +6,9 @@ import me.xenforu.kelo.module.IModule;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.setting.impl.ColorSetting;
+import me.xenforu.kelo.setting.impl.StringSetting;
 import me.xenforu.kelo.traits.Toggleable;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * made by Xen for Kelo
@@ -68,6 +70,10 @@ public class ToggleableModule implements IModule, Toggleable {
         return color;
     }
 
+    public void setColor(int color) {
+        this.color = color;
+    }
+
     @Override
     public String getLabel() {
         return label;
@@ -116,16 +122,19 @@ public class ToggleableModule implements IModule, Toggleable {
 
     @Override
     public void save(JsonObject destination) {
-        destination.addProperty("Enabled", enabled);
+        destination.addProperty("Enabled", isEnabled());
         destination.addProperty("Keybind", getBind());
-
+        destination.addProperty("Color", getColor());
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
             IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this).forEach(property -> {
                 if (property instanceof ColorSetting) {
                     final ColorSetting colorSetting = (ColorSetting) property;
                     destination.addProperty(property.getLabel(), colorSetting.getValue().getRGB());
-                } else
-                    destination.addProperty(property.getLabel(), property.getValue().toString());
+                } else if (property instanceof StringSetting) {
+                    final StringSetting stringSetting = (StringSetting) property;
+                    final String escapedStr = StringEscapeUtils.escapeJava(stringSetting.getValue());
+                    destination.addProperty(property.getLabel(), escapedStr);
+                } else destination.addProperty(property.getLabel(), property.getValue().toString());
             });
         }
     }
@@ -138,11 +147,17 @@ public class ToggleableModule implements IModule, Toggleable {
         if (source.has("Keybind")) {
             setBind(source.get("Keybind").getAsInt());
         }
+        if (source.has("Color")) {
+            setColor(source.get("Color").getAsInt());
+        }
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
             source.entrySet().forEach(entry -> IngrosWare.INSTANCE.settingManager.getSetting(this, entry.getKey()).ifPresent(property -> {
                 if (property instanceof ColorSetting) {
                     final ColorSetting colorSetting = (ColorSetting) property;
                     colorSetting.setValue(entry.getValue().getAsString());
+                } else if (property instanceof StringSetting) {
+                    final StringSetting stringSetting = (StringSetting) property;
+                    stringSetting.setValue(StringEscapeUtils.unescapeJava(entry.getValue().getAsString()));
                 } else property.setValue(entry.getValue().getAsString());
             }));
         }
