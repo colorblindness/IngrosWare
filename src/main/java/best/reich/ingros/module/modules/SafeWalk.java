@@ -1,4 +1,4 @@
-package best.reich.ingros.module.toggles;
+package best.reich.ingros.module.modules;
 
 import best.reich.ingros.events.other.SafeWalkEvent;
 import me.xenforu.kelo.module.ModuleCategory;

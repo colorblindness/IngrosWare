@@ -1,4 +1,4 @@
-package best.reich.ingros.module.toggles;
+package best.reich.ingros.module.modules;
 
 import best.reich.ingros.events.network.PacketEvent;
 import net.b0at.api.event.types.EventType;

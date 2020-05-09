@@ -2,7 +2,7 @@ package best.reich.ingros.gui.clickgui.component.impl;
 
 import best.reich.ingros.IngrosWare;
 import best.reich.ingros.gui.clickgui.component.Component;
-import best.reich.ingros.module.toggles.ClickGui;
+import best.reich.ingros.module.modules.ClickGui;
 import best.reich.ingros.util.game.MouseUtil;
 import best.reich.ingros.util.logging.Logger;
 import best.reich.ingros.util.render.RenderUtil;
