@@ -1,14 +1,9 @@
 package best.reich.ingros.manager;
 
 import best.reich.ingros.IngrosWare;
-<<<<<<< HEAD
 import best.reich.ingros.module.persistent.Commands;
 import best.reich.ingros.module.persistent.Keybinds;
 import best.reich.ingros.module.persistent.Overlay;
-=======
-import best.reich.ingros.module.persistent.*;
-import best.reich.ingros.module.modules.*;
->>>>>>> 1c84150860682a91140941b83356257ba9907bee
 import best.reich.ingros.util.ClassUtil;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -34,34 +29,6 @@ public class ModuleManager extends AbstractModuleManager {
     public void load() {
         register(new Commands());
         register(new Keybinds());
-<<<<<<< HEAD
-=======
-        register(new AntiEffects());
-        register(new AntiTabComplete());
-        register(new AutoArmor());
-        register(new AutoMine());
-        register(new FakeVanilla());
-        register(new FastIce());
-        register(new Flight());
-        register(new KillAura());
-        register(new Notifications());
-        register(new NoVelocity());
-        register(new SafeWalk());
-        register(new Speed());
-        register(new Sprint());
-        register(new Visuals());
-        register(new FastBreak());
-        register(new Crasher());
-        register(new Phase());
-        register(new FullBright());
-        register(new Strafe());
-        register(new NoBossBar());
-		register(new Trajectories());
-        register(new ClickGui());
-        register(new AntiFriendHit());
-        loadExternalModules();
-        /* Move if gay */
->>>>>>> 1c84150860682a91140941b83356257ba9907bee
         register(new Overlay());
         loadInternalModules();
         loadExternalModules();
