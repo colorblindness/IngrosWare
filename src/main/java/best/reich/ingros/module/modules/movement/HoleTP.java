@@ -1,5 +1,6 @@
 package best.reich.ingros.module.modules.movement;
 
+import best.reich.ingros.IngrosWare;
 import best.reich.ingros.events.entity.UpdateEvent;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
@@ -23,6 +24,7 @@ public class HoleTP extends ToggleableModule {
 
     @Subscribe
     public void onUpdate(UpdateEvent event) {
+        if (mc.world == null || mc.player == null || IngrosWare.INSTANCE.moduleManager.getModule("Speed").isEnabled())return;
         if (event.getType() == EventType.POST) {
             if (!mc.player.onGround) {
                 if (mc.gameSettings.keyBindJump.isKeyDown())

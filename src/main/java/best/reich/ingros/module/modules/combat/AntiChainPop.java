@@ -24,6 +24,7 @@ public class AntiChainPop extends ToggleableModule {
                     if (entity.getDisplayName().equals(mc.player.getDisplayName())) {
                         final AutoFeetObby autoFeetObby = (AutoFeetObby) IngrosWare.INSTANCE.moduleManager.getModule("AutoFeetObby");
                         if (!autoFeetObby.isEnabled()) {
+                            autoFeetObby.chainPopToggle = true;
                             autoFeetObby.toggle();
                         }
                     }

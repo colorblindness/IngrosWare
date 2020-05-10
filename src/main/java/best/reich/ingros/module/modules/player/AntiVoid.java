@@ -14,14 +14,12 @@ public class AntiVoid extends ToggleableModule {
     @Subscribe
     public void onMotion(MotionEvent event) {
         if (canMoveBack()) {
-            mc.player.connection.sendPacket(new CPacketPlayer.Position(mc.player.posX, mc.player.posY - 99, mc.player.posZ, false));
+            mc.player.connection.sendPacket(new CPacketPlayer.Position(mc.player.posX, mc.player.posY - 99, mc.player.posZ, true));
         }
     }
 
     private boolean canMoveBack() {
-        return mc.player.fallDistance > 3
-                && !IngrosWare.INSTANCE.moduleManager.getModule("Flight").isEnabled()
-                && !isBlockUnder();
+        return !IngrosWare.INSTANCE.moduleManager.getModule("Flight").isEnabled() && !isBlockUnder();
     }
 
     private boolean isBlockUnder() {

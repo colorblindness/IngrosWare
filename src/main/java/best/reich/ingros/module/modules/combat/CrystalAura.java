@@ -27,6 +27,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemFood;
+import net.minecraft.item.ItemPickaxe;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.server.SPacketSoundEffect;
 import net.minecraft.potion.Potion;
@@ -35,8 +36,10 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.Explosion;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.*;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -95,10 +98,11 @@ public class CrystalAura extends ToggleableModule {
     private long antiStuckSystemTime;
     private long multiPlaceSystemTime;
     private boolean switchCooldown;
+
     @Subscribe
     public void onUpdate(UpdateEvent event) {
-        if (mc.world == null || mc.player == null || pauseWhileEating && mc.player.getHeldItemMainhand().getItem() instanceof ItemFood && mc.player.isHandActive()) return;
-        final EntityEnderCrystal crystal = (EntityEnderCrystal) mc.world.loadedEntityList.stream().filter(entity -> entity instanceof EntityEnderCrystal).map(entity -> entity).min(Comparator.comparing(c -> mc.player.getDistanceToEntity(c))).orElse(null);
+        if (mc.world == null || mc.player == null) return;
+        final EntityEnderCrystal crystal = (EntityEnderCrystal) mc.world.loadedEntityList.stream().filter(entity -> entity instanceof EntityEnderCrystal).min(Comparator.comparing(c -> mc.player.getDistanceToEntity(c))).orElse(null);
         if (crystal != null && render != null && mc.player.getDistanceToEntity(crystal) <= breakRange) {
             if (event.getType() == EventType.PRE) {
                 final float[] rots = MathUtil.calcAngle(new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ), new Vec3d(render.getX() + 0.5, render.getY() + 1.0, render.getZ() + 0.5));
@@ -172,7 +176,7 @@ public class CrystalAura extends ToggleableModule {
             return;
         }
         if (place) {
-            if (!offhand && mc.player.inventory.currentItem != crystalSlot) {
+            if (!offhand && mc.player.inventory.currentItem != crystalSlot && !(pauseWhileEating && mc.player.getHeldItemMainhand().getItem() instanceof ItemFood && mc.player.isHandActive()) && !(mc.player.getHeldItemMainhand().getItem() instanceof ItemPickaxe && mc.player.isSwingInProgress)) {
                 if (autoSwitch) {
                     mc.player.inventory.currentItem = crystalSlot;
                     switchCooldown = true;
@@ -228,65 +232,6 @@ public class CrystalAura extends ToggleableModule {
                 }
             }
         }
-    }
-
-//    @Subscribe
-//    public void onReceivePacket(final PacketEvent event) {
-//        if (event.getPacket() instanceof SPacketSpawnObject) {
-//            final SPacketSpawnObject packetSpawnObject = (SPacketSpawnObject) event.getPacket();
-//            if (event.getType() == EventType.PRE) {
-//                if (packetSpawnObject.getType() == 51) {
-//                    for (PlaceLocation placeLocation : this.placeLocations) {
-//                        if (!placeLocation.placed && placeLocation.getDistance((int) packetSpawnObject.getX(), (int) packetSpawnObject.getY() - 1, (int) packetSpawnObject.getZ()) <= 1) {
-//                            placeLocation.placed = true;
-//                            if (pSilent.getValue() && !mc.player.isPotionActive(MobEffects.WEAKNESS)) {
-//                                event.setCancelled(true);
-//                                CPacketUseEntity packetUseEntity = new CPacketUseEntity();
-//                                packetUseEntity.entityId = packetSpawnObject.getEntityID();
-//                                packetUseEntity.action = CPacketUseEntity.Action.ATTACK;
-//
-//                                final float[] angle = MathUtil.calcAngle(mc.player.getPositionEyes(mc.getRenderPartialTicks()), new Vec3d(packetSpawnObject.getX() + 0.5, packetSpawnObject.getY() + 0.5, packetSpawnObject.getZ() + 0.5));
-//                                mc.player.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
-//                                mc.player.connection.sendPacket(new CPacketPlayer.Rotation(angle[0], angle[1], mc.player.onGround));
-//                                mc.player.connection.sendPacket(packetUseEntity);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    private static final class PlaceLocation extends Vec3i {
-
-        private int alpha = 0xAA;
-        private boolean placed = false;
-        private float damage;
-
-        private PlaceLocation(int xIn, int yIn, int zIn, float damage) {
-            super(xIn, yIn, zIn);
-            this.damage = damage;
-        }
-
-        private void update() {
-            if (this.alpha > 0)
-                this.alpha -= 1;
-        }
-    }
-
-    public static double getRandomInRange(double min, double max) {
-        final Random random = new Random();
-        final double range = max - min;
-        double scaled = random.nextDouble() * range;
-        if (scaled > max) {
-            scaled = max;
-        }
-        double shifted = scaled + min;
-
-        if (shifted > max) {
-            shifted = max;
-        }
-        return shifted;
     }
 
     private boolean canPlaceCrystal(final BlockPos blockPos) {
@@ -368,7 +313,7 @@ public class CrystalAura extends ToggleableModule {
     public void onEnable() {
         super.onEnable();
         if (announcer) {
-            Logger.printMessage("CrystalAura Enabled!", true);
+            Logger.printMessage("CrystalAura Enabled!",false);
         }
     }
 
@@ -378,7 +323,7 @@ public class CrystalAura extends ToggleableModule {
         dmg = null;
         render = null;
         if (announcer) {
-            Logger.printMessage("CrystalAura Disabled!", true);
+            Logger.printMessage("CrystalAura Disabled!",false);
         }
     }
 }

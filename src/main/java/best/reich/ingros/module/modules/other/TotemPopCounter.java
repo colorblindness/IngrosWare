@@ -27,7 +27,7 @@ public class TotemPopCounter extends ToggleableModule {
         for(EntityPlayer player : mc.world.playerEntities) {
             if(player.getHealth() <= 0) {
                 if(popList.containsKey(player.getName())) {
-                    Logger.printMessage(ChatFormatting.DARK_AQUA + player.getName() + ChatFormatting.DARK_RED + " died after popping " + ChatFormatting.GOLD +  popList.get(player.getName()) + " totems!", true);
+                    Logger.printMessage(ChatFormatting.DARK_AQUA + player.getName() + ChatFormatting.DARK_RED + " died after popping " + ChatFormatting.GOLD +  popList.get(player.getName()) + " totems!",true);
                     popList.remove(player.getName(), popList.get(player.getName()));
                 }
             }
@@ -48,12 +48,12 @@ public class TotemPopCounter extends ToggleableModule {
                 }
                 if(popList.get(entity.getName()) == null) {
                     popList.put(entity.getName(), 1);
-                    Logger.printMessage(ChatFormatting.DARK_AQUA + entity.getName() + ChatFormatting.DARK_RED + " popped " + ChatFormatting.GOLD + "1 totem!", true);
+                    Logger.printMessage(ChatFormatting.DARK_AQUA + entity.getName() + ChatFormatting.DARK_RED + " popped " + ChatFormatting.GOLD + "1 totem!",true);
                 } else if(!(popList.get(entity.getName()) == null)) {
                     int popCounter = popList.get(entity.getName());
                     int newPopCounter = popCounter += 1;
                     popList.put(entity.getName(), newPopCounter);
-                    Logger.printMessage(ChatFormatting.DARK_AQUA + entity.getName() + ChatFormatting.DARK_RED + " popped " + ChatFormatting.GOLD +newPopCounter + " totems!", true);
+                    Logger.printMessage(ChatFormatting.DARK_AQUA + entity.getName() + ChatFormatting.DARK_RED + " popped " + ChatFormatting.GOLD +newPopCounter + " totems!",true);
                 }
             }
         }

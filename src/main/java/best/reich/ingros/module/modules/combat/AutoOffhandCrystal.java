@@ -54,7 +54,7 @@ public class AutoOffhandCrystal extends ToggleableModule {
     }
 
     private boolean nearPlayers() {
-        return mc.world.playerEntities.stream().anyMatch(e -> e != mc.player && !IngrosWare.INSTANCE.friendManager.isFriend(e.getName()) && mc.player.getDistanceToEntity(e) <= 10);
+        return mc.world.playerEntities.stream().anyMatch(e -> e != mc.player && e.getEntityId() != -1488 && !IngrosWare.INSTANCE.friendManager.isFriend(e.getName()) && mc.player.getDistanceToEntity(e) <= 10);
     }
 
     private boolean shouldTotem() {

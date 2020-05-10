@@ -60,7 +60,7 @@ public class AutoOffhandGap extends ToggleableModule {
     }
 
     private boolean isEmpty(BlockPos pos){
-        return mc.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().filter(e -> e instanceof EntityEnderCrystal).count() == 0;
+        return mc.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(e -> e instanceof EntityEnderCrystal);
     }
 
     private boolean isCrystalsAABBEmpty(){

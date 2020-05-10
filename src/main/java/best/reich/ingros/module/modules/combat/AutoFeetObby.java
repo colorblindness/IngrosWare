@@ -26,9 +26,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Arrays;
-import java.util.List;
-
 @ModuleManifest(label = "AutoFeetObby", category = ModuleCategory.COMBAT, color = 0xff0030ff)
 public class AutoFeetObby extends ToggleableModule {
     @Setting("Sneak")
@@ -39,8 +36,7 @@ public class AutoFeetObby extends ToggleableModule {
     public boolean endChest = true;
     @Setting("AutoToggle")
     public boolean autoToggle = false;
-    private final List<Block> whiteList = Arrays.asList(Blocks.OBSIDIAN, Blocks.ENDER_CHEST);
-
+    public boolean chainPopToggle = false;
     public static boolean hasNeighbour(BlockPos blockPos) {
         for (EnumFacing side : EnumFacing.values()) {
             BlockPos neighbour = blockPos.offset(side);
@@ -217,10 +213,11 @@ public class AutoFeetObby extends ToggleableModule {
             placeBlockScaffold(westBlockPos, true);
         }
         mc.player.inventory.currentItem = oldSlot;
-        if (autoToggle && !((mc.world.getBlockState(westBlockPos).getMaterial().isReplaceable() && isEntitiesEmpty(westBlockPos)) || (mc.world.getBlockState(eastBlockPos).getMaterial().isReplaceable() && isEntitiesEmpty(eastBlockPos)) || (mc.world.getBlockState(southBlockPos).getMaterial().isReplaceable() && isEntitiesEmpty(southBlockPos)) || (mc.world.getBlockState(northBlockPos).getMaterial().isReplaceable() && isEntitiesEmpty(northBlockPos))))
+        if ((autoToggle || chainPopToggle) && (mc.world.getBlockState(new BlockPos(vec3d).north()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).north()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).south()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).south()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).west()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).west()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).east()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).east()).getBlock() == Blocks.BEDROCK)){
+            chainPopToggle = false;
             toggle();
+        }
     }
-
     private int findBlockInHotbar() {
         for (int i = 0; i < 9; ++i) {
             final ItemStack stack = mc.player.inventory.getStackInSlot(i);
