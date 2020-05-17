@@ -1,6 +1,7 @@
 package best.reich.ingros.module.modules.combat;
 
 import best.reich.ingros.events.entity.UpdateEvent;
+import best.reich.ingros.events.other.TickEvent;
 import best.reich.ingros.mixin.accessors.IMinecraft;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
@@ -34,9 +35,12 @@ public class AutoFeetObby extends ToggleableModule {
     public boolean teleport = true;
     @Setting("EndChest")
     public boolean endChest = true;
+    @Setting("JumpDisable")
+    public boolean jumpDisable = false;
     @Setting("AutoToggle")
     public boolean autoToggle = false;
     public boolean chainPopToggle = false;
+
     public static boolean hasNeighbour(BlockPos blockPos) {
         for (EnumFacing side : EnumFacing.values()) {
             BlockPos neighbour = blockPos.offset(side);
@@ -47,10 +51,13 @@ public class AutoFeetObby extends ToggleableModule {
     }
 
     @Subscribe
-    public void onUpdate(UpdateEvent event) {
+    public void onTick(TickEvent event) {
         if (mc.player == null) return;
         if (sneak && !mc.gameSettings.keyBindSneak.isKeyDown()) return;
-        if (!isEnabled() || mc.player == null) return;
+        if (!mc.player.onGround) {
+            if (mc.gameSettings.keyBindJump.isKeyDown() && jumpDisable) toggle();
+            return;
+        }
         final Vec3d vec3d = getInterpolatedPos(mc.player, 0);
         BlockPos northBlockPos = new BlockPos(vec3d).north();
         BlockPos southBlockPos = new BlockPos(vec3d).south();
@@ -213,11 +220,12 @@ public class AutoFeetObby extends ToggleableModule {
             placeBlockScaffold(westBlockPos, true);
         }
         mc.player.inventory.currentItem = oldSlot;
-        if ((autoToggle || chainPopToggle) && (mc.world.getBlockState(new BlockPos(vec3d).north()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).north()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).south()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).south()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).west()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).west()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).east()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).east()).getBlock() == Blocks.BEDROCK)){
+        if ((autoToggle || chainPopToggle) && (mc.world.getBlockState(new BlockPos(vec3d).north()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).north()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).south()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).south()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).west()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).west()).getBlock() == Blocks.BEDROCK) && (mc.world.getBlockState(new BlockPos(vec3d).east()).getBlock() == Blocks.OBSIDIAN || mc.world.getBlockState(new BlockPos(vec3d).east()).getBlock() == Blocks.BEDROCK)) {
             chainPopToggle = false;
             toggle();
         }
     }
+
     private int findBlockInHotbar() {
         for (int i = 0; i < 9; ++i) {
             final ItemStack stack = mc.player.inventory.getStackInSlot(i);
@@ -268,10 +276,8 @@ public class AutoFeetObby extends ToggleableModule {
             mc.player.swingArm(EnumHand.MAIN_HAND);
             ((IMinecraft) mc).setRightClickDelayTimer(0);
             mc.player.connection.sendPacket(new CPacketEntityAction(mc.player, CPacketEntityAction.Action.STOP_SNEAKING));
-
             return;
         }
-
     }
 
     private static PlayerControllerMP getPlayerController() {

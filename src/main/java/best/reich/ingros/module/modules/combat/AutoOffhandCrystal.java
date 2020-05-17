@@ -2,6 +2,7 @@ package best.reich.ingros.module.modules.combat;
 
 import best.reich.ingros.IngrosWare;
 import best.reich.ingros.events.entity.UpdateEvent;
+import best.reich.ingros.util.game.GameUtil;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.module.type.ToggleableModule;
@@ -22,13 +23,20 @@ import net.minecraft.util.math.BlockPos;
 public class AutoOffhandCrystal extends ToggleableModule {
     @Clamp(minimum = "1", maximum = "22")
     @Setting("Health")
-    public int health = 16;
+    public int health = 20;
 
     @Setting("ToggleTotem")
     public boolean toggletotem = true;
 
     @Setting("CrystalCheck")
     public boolean crystalCheck = true;
+
+    @Setting("HoleCheck")
+    public boolean holeCheck = true;
+
+    @Clamp(minimum = "1", maximum = "22")
+    @Setting("HoleHealth")
+    public int holeHealth = 8;
 
     @Subscribe
     public void onUpdate(UpdateEvent event) {
@@ -58,6 +66,9 @@ public class AutoOffhandCrystal extends ToggleableModule {
     }
 
     private boolean shouldTotem() {
+        if (holeCheck && GameUtil.isInHole(mc.player)) {
+            return (mc.player.getHealth() + mc.player.getAbsorptionAmount()) <= holeHealth || mc.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() == Items.ELYTRA || !nearPlayers() || mc.player.fallDistance >= 3 || (crystalCheck && !isCrystalsAABBEmpty());
+        }
         return (mc.player.getHealth() + mc.player.getAbsorptionAmount()) <= health || mc.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() == Items.ELYTRA || !nearPlayers() || mc.player.fallDistance >= 3 || (crystalCheck && !isCrystalsAABBEmpty());
     }
 

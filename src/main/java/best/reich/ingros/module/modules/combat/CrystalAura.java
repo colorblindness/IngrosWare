@@ -25,21 +25,24 @@ import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemFood;
-import net.minecraft.item.ItemPickaxe;
+import net.minecraft.network.play.client.CPacketAnimation;
+import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
+import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.network.play.server.SPacketSoundEffect;
+import net.minecraft.network.play.server.SPacketSpawnObject;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.*;
 import net.minecraft.util.math.*;
 import net.minecraft.world.Explosion;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 
@@ -68,11 +71,13 @@ public class CrystalAura extends ToggleableModule {
     @Clamp(minimum = "1")
     @Setting("MaxSelfDamage")
     public int maxDamage = 11;
-    @Clamp(minimum = "1", maximum = "10")
+    @Clamp(minimum = "1", maximum = "75")
     @Setting("MultiPlaceSpeed")
     public int multiPlaceSpeed = 2;
     @Setting("Place")
     public boolean place = true;
+    @Setting("pSilent")
+    public boolean pSilent = false;
     @Setting("RayTrace")
     public boolean rayTrace = true;
     @Setting("AutoSwitch")
@@ -98,11 +103,12 @@ public class CrystalAura extends ToggleableModule {
     private long antiStuckSystemTime;
     private long multiPlaceSystemTime;
     private boolean switchCooldown;
+    private final List<PlaceLocation> placeLocations = new CopyOnWriteArrayList<>();
 
     @Subscribe
     public void onUpdate(UpdateEvent event) {
-        if (mc.world == null || mc.player == null) return;
-        final EntityEnderCrystal crystal = (EntityEnderCrystal) mc.world.loadedEntityList.stream().filter(entity -> entity instanceof EntityEnderCrystal).min(Comparator.comparing(c -> mc.player.getDistanceToEntity(c))).orElse(null);
+        if (mc.world == null || mc.player == null || pauseWhileEating && mc.player.getHeldItemMainhand().getItem() instanceof ItemFood && mc.player.isHandActive()) return;
+        final EntityEnderCrystal crystal = (EntityEnderCrystal) mc.world.loadedEntityList.stream().filter(entity -> entity instanceof EntityEnderCrystal).map(entity -> entity).min(Comparator.comparing(c -> mc.player.getDistanceToEntity(c))).orElse(null);
         if (crystal != null && render != null && mc.player.getDistanceToEntity(crystal) <= breakRange) {
             if (event.getType() == EventType.PRE) {
                 final float[] rots = MathUtil.calcAngle(new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ), new Vec3d(render.getX() + 0.5, render.getY() + 1.0, render.getZ() + 0.5));
@@ -176,7 +182,7 @@ public class CrystalAura extends ToggleableModule {
             return;
         }
         if (place) {
-            if (!offhand && mc.player.inventory.currentItem != crystalSlot && !(pauseWhileEating && mc.player.getHeldItemMainhand().getItem() instanceof ItemFood && mc.player.isHandActive()) && !(mc.player.getHeldItemMainhand().getItem() instanceof ItemPickaxe && mc.player.isSwingInProgress)) {
+            if (!offhand && mc.player.inventory.currentItem != crystalSlot) {
                 if (autoSwitch) {
                     mc.player.inventory.currentItem = crystalSlot;
                     switchCooldown = true;
@@ -191,6 +197,7 @@ public class CrystalAura extends ToggleableModule {
             }
             if (System.nanoTime() / 1000000L - placeSystemTime >= placeDelay * 2) {
                 mc.player.connection.sendPacket(new CPacketPlayerTryUseItemOnBlock(finalPos, f, offhand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, 0.0f, 0.0f, 0.0f));
+                this.placeLocations.add(new PlaceLocation(finalPos.getX(), finalPos.getY(), finalPos.getZ()));
                 render = finalPos;
                 dmg = MathHelper.floor(damage) + "hp";
                 antiStuckSystemTime = System.nanoTime() / 1000000L;
@@ -231,6 +238,40 @@ public class CrystalAura extends ToggleableModule {
                     }
                 }
             }
+        }
+    }
+
+    @Subscribe
+    public void onReceivePacket(final PacketEvent event) {
+        if (event.getPacket() instanceof SPacketSpawnObject) {
+            final SPacketSpawnObject packetSpawnObject = (SPacketSpawnObject) event.getPacket();
+            if (event.getType() == EventType.PRE) {
+                if (packetSpawnObject.getType() == 51) {
+                    for (PlaceLocation placeLocation : this.placeLocations) {
+                        if (!placeLocation.placed && placeLocation.getDistance((int) packetSpawnObject.getX(), (int) packetSpawnObject.getY() - 1, (int) packetSpawnObject.getZ()) <= 1) {
+                            placeLocation.placed = true;
+                            if (pSilent && !mc.player.isPotionActive(MobEffects.WEAKNESS)) {
+                                event.setCancelled(true);
+                                CPacketUseEntity packetUseEntity = new CPacketUseEntity();
+                                packetUseEntity.entityId = packetSpawnObject.getEntityID();
+                                packetUseEntity.action = CPacketUseEntity.Action.ATTACK;
+
+                                final float[] angle = MathUtil.calcAngle(mc.player.getPositionEyes(mc.getRenderPartialTicks()), new Vec3d(packetSpawnObject.getX() + 0.5, packetSpawnObject.getY() + 0.5, packetSpawnObject.getZ() + 0.5));
+                                mc.player.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
+                                mc.player.connection.sendPacket(new CPacketPlayer.Rotation(angle[0], angle[1], mc.player.onGround));
+                                mc.player.connection.sendPacket(packetUseEntity);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static final class PlaceLocation extends Vec3i {
+        private boolean placed = false;
+        private PlaceLocation(int xIn, int yIn, int zIn) {
+            super(xIn, yIn, zIn);
         }
     }
 
@@ -313,7 +354,7 @@ public class CrystalAura extends ToggleableModule {
     public void onEnable() {
         super.onEnable();
         if (announcer) {
-            Logger.printMessage("CrystalAura Enabled!",false);
+            Logger.printMessage("CrystalAura Enabled!", true);
         }
     }
 
@@ -323,7 +364,7 @@ public class CrystalAura extends ToggleableModule {
         dmg = null;
         render = null;
         if (announcer) {
-            Logger.printMessage("CrystalAura Disabled!",false);
+            Logger.printMessage("CrystalAura Disabled!", true);
         }
     }
 }
