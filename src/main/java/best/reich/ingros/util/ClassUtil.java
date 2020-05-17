@@ -21,7 +21,7 @@ public class ClassUtil {
         final List<Class<?>> classes = new ArrayList<>();
 
         try {
-            final File file = new File(path);
+            final File file = new File(path.replace("e:", ""));
             final ClassLoader classLoader = URLClassLoader.newInstance(new URL[]{file.toURI().toURL()}, IngrosWare.class.getClassLoader());
             final ZipFile zip = new ZipFile(file);
             for (Enumeration list = zip.entries(); list.hasMoreElements(); ) {

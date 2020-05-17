@@ -1,4 +1,4 @@
-package best.reich.ingros.module.modules.combat;
+package best.reich.ingros.module.modules.player;
 
 import best.reich.ingros.IngrosWare;
 import best.reich.ingros.events.entity.UpdateEvent;

@@ -36,7 +36,7 @@ import net.minecraft.util.math.Vec3d;
  **/
 @ModuleManifest(label = "KillAura", category = ModuleCategory.COMBAT, color = 0xff800000)
 public class KillAura extends ToggleableModule {
-    private EntityLivingBase target;
+    public EntityLivingBase target;
     @Setting("SortMode")
     @Mode({"FOV", "HEALTH", "DISTANCE"})
     public String sortmode = "FOV";

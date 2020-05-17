@@ -165,18 +165,18 @@ public class SelfTrap extends ToggleableModule {
         List<Vec3d> placeTargets = new ArrayList<>();
 
         if (mode.toLowerCase().equals("trap")) {
-            Collections.addAll(placeTargets, SelfTrap.Offsets.TRAP);
+            Collections.addAll(placeTargets, Offsets.TRAP);
         }
 
         if (mode.toLowerCase().equals("blockoverhead")) {
             if (getViewYaw() <= 315 && getViewYaw() >= 225)
-                Collections.addAll(placeTargets, SelfTrap.Offsets.BLOCKOVERHEADFACINGNEGX);
+                Collections.addAll(placeTargets, Offsets.BLOCKOVERHEADFACINGNEGX);
             else if (getViewYaw() < 45 && getViewYaw() > 0 || getViewYaw() > 315 && getViewYaw() < 360)
-                Collections.addAll(placeTargets, SelfTrap.Offsets.BLOCKOVERHEADFACINGPOSZ);
+                Collections.addAll(placeTargets, Offsets.BLOCKOVERHEADFACINGPOSZ);
             else if (getViewYaw() <= 135 && getViewYaw() >= 45)
-                Collections.addAll(placeTargets, SelfTrap.Offsets.BLOCKOVERHEADFACINGPOSX);
+                Collections.addAll(placeTargets, Offsets.BLOCKOVERHEADFACINGPOSX);
             else if (getViewYaw() < 225 && getViewYaw() > 135)
-                Collections.addAll(placeTargets, SelfTrap.Offsets.BLOCKOVERHEADFACINGNEGZ);
+                Collections.addAll(placeTargets, Offsets.BLOCKOVERHEADFACINGNEGZ);
         }
 
         int blocksPlaced = 0;
