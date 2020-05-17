@@ -17,7 +17,7 @@ import java.util.HashMap;
 
 @ModuleManifest(label = "TotemPopCounter", category = ModuleCategory.OTHER, color = 0xff40AEFE,hidden = true)
 public class TotemPopCounter extends ToggleableModule {
-    private HashMap<String, Integer> popList = new HashMap<>();
+    public static HashMap<String, Integer> popList = new HashMap<>();
 
      @Subscribe
     public void onUpdate(UpdateEvent event) {
