@@ -1,5 +1,6 @@
 package best.reich.ingros.module.modules.movement;
 
+import best.reich.ingros.IngrosWare;
 import best.reich.ingros.events.entity.UpdateEvent;
 import net.b0at.api.event.types.EventType;
 import me.xenforu.kelo.module.ModuleCategory;
@@ -19,6 +20,15 @@ public class Sprint extends ToggleableModule {
     @Subscribe
     public void onUpdate(UpdateEvent event) {
         if(event.getType() == EventType.PRE) {
+            Scaffold scaffold = (Scaffold) IngrosWare.INSTANCE.moduleManager.getToggleByName("Scaffold");
+            if (scaffold.isEnabled() && !scaffold.sprint) {
+                mc.player.setSprinting(false);
+                return;
+            }
+            if (scaffold.isEnabled() && mc.gameSettings.keyBindSneak.isKeyDown() && scaffold.down) {
+                mc.player.setSprinting(false);
+                return;
+            }
             if (isSprintable(mc.player))
                 mc.player.setSprinting(true);
         }

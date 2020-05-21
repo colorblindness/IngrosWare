@@ -21,6 +21,7 @@ import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.projectile.EntitySnowball;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
@@ -37,6 +38,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -53,7 +55,7 @@ public class Scaffold extends ToggleableModule {
     private BlockData blockData;
 
     @Setting("Expand")
-    @Clamp(minimum = "1", maximum = "6")
+    @Clamp(minimum = "0.1", maximum = "6")
     public double expand = 1;
 
     @Setting("ESPMode")
@@ -67,16 +69,16 @@ public class Scaffold extends ToggleableModule {
     public boolean tower = true;
 
     @Setting("Center")
-    public static boolean center = true;
+    public boolean center = true;
 
     @Setting("KeepY")
     public boolean keepY = true;
 
     @Setting("Sprint")
-    public static boolean sprint = true;
+    public boolean sprint = true;
 
     @Setting("ESP")
-    public static boolean esp = true;
+    public boolean esp = true;
 
     @Setting("KeepRotations")
     public boolean keepRots = true;
@@ -85,7 +87,7 @@ public class Scaffold extends ToggleableModule {
     public boolean replenishBlocks = true;
 
     @Setting("Down")
-    public static boolean down = true;
+    public boolean down = true;
 
     @Setting("Swing")
     public boolean swing = false;
@@ -94,6 +96,7 @@ public class Scaffold extends ToggleableModule {
     private float lastYaw, lastPitch;
     private BlockPos pos;
     private boolean teleported;
+
 
     @Override
     public void onEnable() {
@@ -135,9 +138,15 @@ public class Scaffold extends ToggleableModule {
 
     @Subscribe
     public void onUpdate(final UpdateEvent event) {
+        int downDistance;
         if (!IngrosWare.INSTANCE.moduleManager.getModule("Sprint").isEnabled()) {
             if ((down && mc.gameSettings.keyBindSneak.isKeyDown()) || !sprint)
                 mc.player.setSprinting(false);
+        }
+        if (down && mc.gameSettings.keyBindSneak.isKeyDown()) {
+            downDistance = 2;
+        } else {
+            downDistance = 1;
         }
         if (replenishBlocks && !(mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemBlock) && getBlockCountHotbar() <= 0 && this.itemTimer.reach(100L)) {
             for (int i = 9; i < 45; ++i) {
@@ -175,14 +184,11 @@ public class Scaffold extends ToggleableModule {
                 x = coords[0];
                 z = coords[1];
             }
-            if (canPlace(mc.world.getBlockState(new BlockPos(mc.player.posX, mc.player.posY - (mc.gameSettings.keyBindSneak.isKeyDown() && down ? 2 : 1), mc.player.posZ)).getBlock())) {
+            if (canPlace(mc.world.getBlockState(new BlockPos(mc.player.posX, mc.player.posY - downDistance, mc.player.posZ)).getBlock())) {
                 x = mc.player.posX;
                 z = mc.player.posZ;
             }
-            BlockPos blockBelow = new BlockPos(x, y-1, z);
-            if (mc.gameSettings.keyBindSneak.isKeyDown() && down) {
-                blockBelow = new BlockPos(x, y - 2, z);
-            }
+            BlockPos blockBelow = new BlockPos(x, y-downDistance, z);
             pos = blockBelow;
             if (mc.world.getBlockState(blockBelow).getBlock() == Blocks.AIR) {
                 this.blockData = this.getBlockData2(blockBelow);
