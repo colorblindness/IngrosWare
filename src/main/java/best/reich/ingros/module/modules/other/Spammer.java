@@ -2,6 +2,7 @@ package best.reich.ingros.module.modules.other;
 
 import best.reich.ingros.IngrosWare;
 import best.reich.ingros.events.entity.UpdateEvent;
+import best.reich.ingros.util.logging.Logger;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.module.type.ToggleableModule;
@@ -28,10 +29,11 @@ public class Spammer extends ToggleableModule {
     private int index = 0;
     private List<String> StringList;
     private final Random random = new Random();
+    private boolean FileInit = false;
 
     @Subscribe
     public void onUpdate(UpdateEvent event) {
-        if (mc.world == null || mc.player == null) return;
+        if (mc.world == null || mc.player == null | !FileInit) return;
         if (timer.sleep((int) (delay * 1000))) {
             if (index < StringList.size()) {
                 final ArrayList<NetworkPlayerInfo> niggas = new ArrayList<>(mc.player.connection.getPlayerInfoMap());
@@ -46,27 +48,42 @@ public class Spammer extends ToggleableModule {
     @Override
     public void onDisable() {
         super.onDisable();
-        StringList.clear();
-        StringList = null;
+        if (FileInit) {
+            StringList.clear();
+            StringList = null;
+        }
     }
 
     @Override
     public void onEnable() {
         super.onEnable();
+        File file = new File(IngrosWare.INSTANCE.path + File.separator + "spam.txt");
         try {
-            File file = new File(IngrosWare.INSTANCE.path.toFile(), "spam.txt");
-            if (file.exists() || Files.readAllLines(file.toPath()).size() <= 0) {
+            if (!file.exists()) {
+                file.createNewFile();
+                StringList = new ArrayList<>();
+                StringList.add("IngrosWare owns all! %RANDOMNUMBER%");
+                FileInit = true;
+                return;
+            }
+
+            if (file.exists()) {
+                if (Files.readAllLines(file.toPath()).size() <= 0) {
+                    StringList = new ArrayList<>();
+                    StringList.add("IngrosWare owns all! %RANDOMNUMBER%");
+                    FileInit = true;
+                    return;
+                }
+
                 List<String> lines = Files.readAllLines(file.toPath());
                 if (lines.size() > 0) {
                     StringList = lines;
+                    FileInit = true;
                     return;
                 }
-            } else file.createNewFile();
-            {
-                StringList = new ArrayList<>();
-                StringList.add("IngrosWare owns all! %RANDOMNUMBER%");
             }
         } catch (IOException ignored) {
+
         }
         index = 0;
     }
