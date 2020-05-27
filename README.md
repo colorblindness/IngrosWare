@@ -7,7 +7,7 @@
 # How to setup
 Clone the workspace
 ```
-https://github.com/creeperslayer69/ingrosware.git
+https://github.com/oHare2/IngrosWare.git
 ```
 Go into folder and open up a command prompt and do
 
