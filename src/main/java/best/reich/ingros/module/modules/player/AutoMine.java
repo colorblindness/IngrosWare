@@ -9,6 +9,7 @@ import best.reich.ingros.mixin.accessors.IPlayerControllerMP;
 import me.xenforu.kelo.module.ModuleCategory;
 import me.xenforu.kelo.module.annotation.ModuleManifest;
 import me.xenforu.kelo.module.type.ToggleableModule;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
@@ -54,6 +55,10 @@ public class AutoMine extends ToggleableModule {
             if (pos == null) {
                 return;
             }
+
+            if (mc.world.getBlockState(pos).getBlock() == Blocks.AIR)
+                pos = null;
+
             if (mc.player.getDistanceSq(pos) > 25) {
                 mc.playerController.onPlayerDamageBlock(new BlockPos(0, 0, 0), EnumFacing.UP);
                 return;

@@ -40,13 +40,16 @@ public abstract class MixinBlock {
 
     @Inject(
             method = "addCollisionBoxToList(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/AxisAlignedBB;Ljava/util/List;Lnet/minecraft/entity/Entity;Z)V",
-            at = @At("HEAD")
+            at = @At("HEAD"),
+            cancellable = true
     )
     private void addCollisionBox(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState, CallbackInfo ci) {
         synchronized (this) {
             Block block = (Block) (Object) (this);
             bbEvent = new BoundingBoxEvent(block, pos, block.getCollisionBoundingBox(state, world, pos), collidingBoxes, entity);
             IngrosWare.INSTANCE.bus.fireEvent(bbEvent);
+            if (bbEvent.getBoundingBox() == null)
+                ci.cancel();
         }
     }
 

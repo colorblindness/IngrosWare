@@ -22,7 +22,7 @@ import java.util.List;
 @ModuleManifest(label = "Flight", category = ModuleCategory.MOVEMENT, color = 0x3B7A91)
 public class Flight extends ToggleableModule {
     @Setting("mode")
-    @Mode({"CREATIVE", "PACKET"})
+    @Mode({"CREATIVE", "PACKET", "VANILLA"})
     public String mode = "CREATIVE";
     @Clamp(minimum = "0.01", maximum = "10.0")
     @Setting("Speed")
@@ -37,6 +37,18 @@ public class Flight extends ToggleableModule {
         switch (mode.toUpperCase()) {
             case "CREATIVE":
                 mc.player.capabilities.isFlying = true;
+                break;
+            case "VANILLA":
+                if (mc.gameSettings.keyBindJump.isKeyDown()) {
+                    mc.player.motionY = speed;
+                } else if (mc.gameSettings.keyBindSneak.isKeyDown()) {
+                    mc.player.motionY = -speed;
+                } else {
+                    mc.player.motionY = 0;
+                }
+                double[] direction = directionSpeed(speed);
+                mc.player.motionX = direction[0];
+                mc.player.motionZ = direction[1];
                 break;
             case "PACKET":
                 if (this.teleportId <= 0) {

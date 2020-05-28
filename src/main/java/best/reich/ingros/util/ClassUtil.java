@@ -19,7 +19,7 @@ import java.util.zip.ZipFile;
 public class ClassUtil {
     public static List<Class<?>> getClassesIn(String path) {
         final List<Class<?>> classes = new ArrayList<>();
-
+        System.out.println("smh:" + path.replace("e:", ""));
         try {
             final File file = new File(path.replace("e:", ""));
             final ClassLoader classLoader = URLClassLoader.newInstance(new URL[]{file.toURI().toURL()}, IngrosWare.class.getClassLoader());

@@ -63,7 +63,6 @@ public class Blink extends ToggleableModule {
     @Override
     public void onEnable() {
         if (mc.world == null) return;
-        Vector3d startVector = new Vector3d(mc.player.posX, mc.player.posY, mc.player.posZ);
         final EntityOtherPlayerMP entityOtherPlayerMP = new EntityOtherPlayerMP(mc.world, mc.player.getGameProfile());
         entityOtherPlayerMP.inventory = mc.player.inventory;
         entityOtherPlayerMP.inventoryContainer = mc.player.inventoryContainer;

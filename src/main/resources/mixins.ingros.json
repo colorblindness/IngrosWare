@@ -26,6 +26,7 @@
     "MixinSPacketPosLook",
     "MixinTextComponentString",
     "MixinWorldClient",
-    "MixinMovementInputFromOptions"
+    "MixinMovementInputFromOptions",
+    "MixinGuiNewChat"
   ]
 }

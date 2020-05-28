@@ -9,6 +9,7 @@ import net.b0at.api.event.Subscribe;
 import net.b0at.api.event.types.EventType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.state.IBlockProperties;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -24,7 +25,7 @@ public class Jesus extends ToggleableModule {
         if (event.getType().equals(EventType.PRE)) {
             if (isInLiquid()) mc.player.motionY = 0.1;
             if (isOnLiquid() && !isInLiquid()) {
-                event.setY(event.getY() + (mc.player.ticksExisted % 2 == 0 ? 0.000000000002000111 : 0));
+                event.setY(event.getY() + (mc.player.ticksExisted % 2 == 0 ? 0.01 : -0.01));
                 event.setOnGround(mc.player.ticksExisted % 2 != 0);
             }
         }

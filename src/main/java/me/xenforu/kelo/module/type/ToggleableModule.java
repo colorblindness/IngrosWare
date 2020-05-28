@@ -125,6 +125,7 @@ public class ToggleableModule implements IModule, Toggleable {
         destination.addProperty("Enabled", isEnabled());
         destination.addProperty("Keybind", getBind());
         destination.addProperty("Color", getColor());
+        destination.addProperty("Hidden", isHidden());
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
             IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this).forEach(property -> {
                 if (property instanceof ColorSetting) {
@@ -149,6 +150,9 @@ public class ToggleableModule implements IModule, Toggleable {
         }
         if (source.has("Color")) {
             setColor(source.get("Color").getAsInt());
+        }
+        if (source.has("Hidden") && source.get("Hidden").getAsBoolean()) {
+            setHidden(true);
         }
         if (IngrosWare.INSTANCE.settingManager.getSettingsFromObject(this) != null) {
             source.entrySet().forEach(entry -> IngrosWare.INSTANCE.settingManager.getSetting(this, entry.getKey()).ifPresent(property -> {

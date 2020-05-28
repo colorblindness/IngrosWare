@@ -23,9 +23,10 @@ public class IngrosWare extends Client {
     public CommandManager commandManager = new CommandManager();
     public MacroManager macroManager = new MacroManager();
     public NotificationManager notificationManager = new NotificationManager();
+    public ProfileManager profileManager = new ProfileManager();
     private final AltService altService = new AltService();
     public IngrosWare() {
-        super("IngrosWare", "4.0", new String[]{"x3", "carroteater", "Xenforu"});
+        super("IngrosWare", "4.1", new String[]{"x3", "carroteater", "Xenforu"});
     }
 
     @Override
@@ -48,6 +49,7 @@ public class IngrosWare extends Client {
         }
         friendManager.unload();
         moduleManager.unload();
+        profileManager.unload();
     }
     public void switchToMojang() {
         try {
