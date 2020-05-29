@@ -34,6 +34,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -66,6 +67,9 @@ public class Overlay extends PersistentModule {
 
     @Setting("TPS")
     public boolean tps = true;
+
+    @Setting("BPS")
+    public boolean BPS = true;
 
     @Setting("Totems")
     public boolean totems = true;
@@ -188,6 +192,17 @@ public class Overlay extends PersistentModule {
             final NetworkPlayerInfo networkPlayerInfo = mc.getConnection().getPlayerInfo(mc.player.getGameProfile().getId());
             final String ping = networkPlayerInfo == null ? "0ms" : networkPlayerInfo.getResponseTime() + " ms";
             RenderUtil.drawText("Ping: " + ChatFormatting.WHITE + ping, 2, y, getHudColor(), font);
+            y += RenderUtil.getTextHeight(font) + 2;
+        }
+        if (BPS) {
+            final DecimalFormat df = new DecimalFormat("#.#");
+
+            final double deltaX = Minecraft.getMinecraft().player.posX - Minecraft.getMinecraft().player.prevPosX;
+            final double deltaZ = Minecraft.getMinecraft().player.posZ - Minecraft.getMinecraft().player.prevPosZ;
+            final float tickRate = (Minecraft.getMinecraft().timer.tickLength / 1000.0f);
+
+            final String BPSText = df.format((MathHelper.sqrt(deltaX * deltaX + deltaZ * deltaZ) / tickRate));
+            RenderUtil.drawText("BPS: " + ChatFormatting.WHITE + BPSText, 2, y, getHudColor(), font);
             y += RenderUtil.getTextHeight(font) + 2;
         }
         if (inventory) {
